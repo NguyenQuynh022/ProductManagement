@@ -400,23 +400,10 @@ export default function ProductsScreen() {
                     <Text style={styles.detailName}>{detailProduct.name}</Text>
                     <Text style={styles.detailPrice}>{formatVND(detailProduct.price)}</Text>
 
-                    {/* Các thẻ thông tin */}
-                    <View style={styles.detailInfoRow}>
-                      <View style={styles.detailInfoCard}>
-                        <Text style={styles.detailInfoLabel}>📦 Tồn kho</Text>
-                        <Text style={styles.detailInfoValue}>{detailProduct.soluong} chiếc</Text>
-                      </View>
-                      <View style={styles.detailInfoCard}>
-                        <Text style={styles.detailInfoLabel}>🏷️ Trạng thái</Text>
-                        <Text
-                          style={[
-                            styles.detailInfoValue,
-                            { color: detailProduct.soluong > 0 ? '#15803d' : '#dc2626' },
-                          ]}
-                        >
-                          {detailProduct.soluong > 0 ? 'Còn hàng' : 'Hết hàng'}
-                        </Text>
-                      </View>
+                    {/* Thẻ thông tin tồn kho */}
+                    <View style={[styles.detailInfoRowSingle, { marginBottom: 12 }]}>
+                      <Text style={styles.detailInfoLabel}>📦 Số lượng tồn kho</Text>
+                      <Text style={styles.detailInfoValue}>{detailProduct.soluong} chiếc</Text>
                     </View>
 
                     <View style={styles.detailInfoRowSingle}>

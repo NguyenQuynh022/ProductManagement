@@ -10,7 +10,7 @@ Dự án "Xây dựng ứng dụng quản lý sản phẩm" phục vụ phân h�
 
 ## 2. MỤC TIÊU
 - Xây dựng hệ thống hoàn chỉnh tách biệt Frontend và Backend thông qua RESTful API.
-- **Web Admin**: Đăng nhập quản trị, xem danh sách, thêm, sửa, xóa, tìm kiếm sản phẩm, giao diện hiện đại responsive.
+- **Web Admin**: Đăng nhập quản trị, xem danh sách, thêm, sửa, xóa, tìm kiếm sản phẩm, dashboard thống kê kho, hồ sơ cửa hàng tuỳ chỉnh, giao diện responsive hiện đại.
 - **Mobile Android**: Hiển thị sản phẩm, xem chi tiết, thêm sản phẩm và chọn/tải ảnh trực tiếp từ thư viện hoặc camera thiết bị di động.
 - **Cơ sở dữ liệu**: Kết nối MongoDB hiện có (`ProductManagement`), bảo đảm đúng 4 trường dữ liệu (`name`, `price`, `soluong`, `image`) và không có trường thừa.
 
@@ -95,25 +95,26 @@ ProductManagement/
 │   ├── app/
 │   │   ├── _layout.tsx         # Định tuyến gốc Expo Router
 │   │   ├── index.tsx           # Kiểm tra phiên đăng nhập và chuyển hướng
-│   │   ├── login.tsx           # Màn hình đăng nhập Web Admin
+│   │   ├── login.tsx           # Màn hình đăng nhập Web Admin (bảo mật)
 │   │   ├── admin/
-│   │   │   ├── dashboard.tsx   # Bảng điều khiển thống kê tổng quan
-│   │   │   └── products.tsx    # Quản lý sản phẩm (Bảng, Thêm, Sửa, Xóa)
+│   │   │   ├── dashboard.tsx   # Bảng điều khiển thống kê kho hàng
+│   │   │   └── products.tsx    # Quản lý sản phẩm (Bảng, Thêm, Sửa, Xóa, Chi tiết)
 │   │   └── mobile/
 │   │       ├── index.tsx       # Màn hình chính Mobile Android (Danh sách SP)
 │   │       ├── add.tsx         # Màn hình Thêm sản phẩm Mobile (Expo Image Picker)
 │   │       └── detail/
 │   │           └── [id].tsx    # Màn hình Chi tiết sản phẩm Mobile (Ảnh Hero)
 │   ├── components/
-│   │   ├── Navbar.tsx          # Thanh điều hướng Web Admin & liên kết Mobile
-│   │   ├── StatCard.tsx        # Thẻ thống kê số liệu kho hàng
+│   │   ├── Navbar.tsx          # Thanh điều hướng responsive (Mobile & Desktop Web)
+│   │   │                       # Tích hợp Hồ Sơ Cửa Hàng & tuỳ chỉnh logo
+│   │   ├── StatCard.tsx        # Thẻ thống kê số liệu kho hàng (Dashboard)
 │   │   ├── ProductFormModal.tsx# Hộp thoại Thêm / Sửa sản phẩm kèm Upload ảnh
 │   │   └── DeleteConfirmModal.tsx # Hộp thoại xác nhận xóa an toàn
 │   ├── services/
 │   │   ├── api.ts              # Cấu hình Axios Interceptors
 │   │   ├── authService.ts      # Gọi API đăng nhập và lưu JWT token
 │   │   ├── productService.ts   # Gọi API CRUD sản phẩm, upload, export JSON
-│   │   └── storage.ts          # Lưu trữ token đa nền tảng
+│   │   └── storage.ts          # Lưu trữ token & logo cửa hàng đa nền tảng
 │   ├── types/
 │   │   └── product.ts          # Định nghĩa kiểu dữ liệu TypeScript
 │   ├── constants/
@@ -128,20 +129,7 @@ ProductManagement/
 │
 ├── report/
 │   ├── BAO_CAO.md              # Báo cáo chi tiết đề tài
-│   ├── screenshot_login.png    # Ảnh đăng nhập Web
-│   ├── screenshot_dashboard.png# Ảnh Dashboard
-│   ├── screenshot_products.png # Ảnh Quản lý sản phẩm
-│   ├── screenshot_add_modal.png# Ảnh Modal Thêm Web
-│   ├── screenshot_edit_modal.png# Ảnh Modal Sửa Web
-│   ├── screenshot_delete_modal.png# Ảnh Modal Xác nhận Xóa Web
-│   ├── screenshot_responsive.png# Ảnh Responsive Mobile Web
-│   ├── screenshot_mobile_home.png# Ảnh Màn hình chính Mobile Android
-│   ├── screenshot_mobile_detail.png# Ảnh Chi tiết sản phẩm Mobile Android
-│   ├── screenshot_mobile_add.png# Ảnh Thêm sản phẩm Mobile Android
-│   ├── screenshot_mongodb.png   # Ảnh kiểm tra CSDL MongoDB (4 trường dữ liệu)
-│   ├── screenshot_crud_create.png# Ảnh kiểm thử Tạo sản phẩm
-│   ├── screenshot_crud_update.png# Ảnh kiểm thử Sửa sản phẩm
-│   └── screenshot_crud_delete.png# Ảnh kiểm thử Xóa sản phẩm
+│   └── [ảnh minh hoạ]         # Ảnh chụp màn hình các chức năng
 │
 ├── README.md                   # Hướng dẫn tổng quan dự án
 ├── .gitignore                  # Loại trừ node_modules, .env, .expo
@@ -160,6 +148,15 @@ ProductManagement/
   - `soluong`: Number (Số lượng tồn kho)
   - `image`: String (URL hoặc đường dẫn ảnh upload)
 - **Quy tắc nghiêm ngặt:** Cấu hình `{ collection: 'products', versionKey: false, timestamps: false }` đảm bảo không phát sinh `__v`, không có `createdAt`/`updatedAt`, không thêm trường nghiệp vụ ngoài quy định.
+- **5 sản phẩm mẫu:**
+
+| STT | Tên sản phẩm      | Đơn giá (VND) | Số lượng |
+|-----|-------------------|--------------|---------|
+| 1   | iPhone 16         | 22.000.000   | 10      |
+| 2   | Samsung Galaxy S25| 20.000.000   | 15      |
+| 3   | MacBook Air M4    | 27.000.000   | 8       |
+| 4   | AirPods 4         | 3.500.000    | 20      |
+| 5   | iPad Air M3       | 16.000.000   | 12      |
 
 ---
 
@@ -176,13 +173,21 @@ ProductManagement/
    - `POST /api/upload`: Nhận file ảnh qua Multer, kiểm tra định dạng và kích thước (tối đa 5MB), bảo vệ bằng JWT Authentication, lưu vào `backend/uploads/` và trả về đường dẫn URL.
    - Phục vụ file tĩnh tại endpoint `/uploads/:filename`.
 3. **Xác thực Admin:**
-   - `POST /api/auth/login`: Xác thực tài khoản quản trị (`admin`/`admin123`), sinh mã JWT token thời hạn 24 giờ.
+   - `POST /api/auth/login`: Xác thực tài khoản quản trị, sinh mã JWT token thời hạn 24 giờ.
    - `GET /api/auth/me`: Kiểm tra thông tin phiên làm việc.
 
 ### Phân hệ Web Admin:
-1. **Đăng nhập Admin (`/login`):** Giao diện đăng nhập hiện đại, lưu JWT an toàn, form không hardcode mật khẩu, tự động kiểm tra phiên và điều hướng.
-2. **Dashboard (`/admin/dashboard`):** Thống kê tổng số sản phẩm, tổng tồn kho, giá trị kho hàng, sản phẩm giá cao nhất, bảng xem trước sản phẩm.
-3. **Quản lý sản phẩm (`/admin/products`):** Danh sách dạng bảng chuyên nghiệp, tìm kiếm tên thời gian thực, 5 bộ lọc sắp xếp giá và số lượng, modal Thêm và Sửa tích hợp bộ chọn ảnh tải lên, hộp thoại xác nhận xóa an toàn.
+1. **Đăng nhập Admin (`/login`):** Giao diện đăng nhập tối giản, bảo mật, không hiển thị thông tin tài khoản mặc định, lưu JWT vào AsyncStorage, tự động kiểm tra phiên và điều hướng.
+2. **Dashboard (`/admin/dashboard`):** 4 thẻ thống kê (StatCard): Tổng sản phẩm, Tổng tồn kho, Tổng giá trị kho, Mặt hàng cao cấp nhất. Bảng danh sách sản phẩm preview. Navbar desktop đầy đủ với tabs điều hướng.
+3. **Quản lý sản phẩm (`/admin/products`):**
+   - Bảng danh sách chuyên nghiệp: STT, Hình ảnh, Tên + ID, Đơn giá VND, Badge tồn kho, nút Sửa & Xóa.
+   - Thanh tìm kiếm thời gian thực theo tên.
+   - 5 bộ lọc sắp xếp: Tất cả, Giá thấp↗, Giá cao↘, Kho nhiều, Kho ít.
+   - Modal **Thêm sản phẩm**: Form tải ảnh lên hoặc dán URL, nhập tên, đơn giá, số lượng.
+   - Modal **Chỉnh sửa sản phẩm**: Form điền sẵn thông tin hiện tại, hỗ trợ đổi ảnh.
+   - Modal **Xác nhận xóa**: Hiển thị tên sản phẩm cần xóa, nút Hủy / Xác nhận màu đỏ.
+   - Modal **Chi tiết sản phẩm** (khi nhấn vào dòng sản phẩm trên mobile): Ảnh lớn + Số lượng tồn kho + Mã ID MongoDB + nút Chỉnh sửa & Xóa.
+4. **Hồ sơ cửa hàng (nhấn vào logo/tiêu đề):** Hiển thị tên & logo cửa hàng; tải logo mới từ máy tính/điện thoại; chọn 4 logo preset có sẵn; thông tin quản trị viên & số mặt hàng; nút Đăng xuất nhanh.
 
 ### Phân hệ Mobile Android:
 1. **Danh sách sản phẩm (`/mobile`):**
@@ -192,12 +197,11 @@ ProductManagement/
    - Nút hành động nổi (FAB `➕`) dẫn đến màn hình thêm sản phẩm.
 2. **Chi tiết sản phẩm (`/mobile/detail/[id]`):**
    - Ảnh sản phẩm kích thước lớn (Hero image).
-   - Hiển thị đầy đủ thông tin: Tên sản phẩm, đơn giá, số lượng tồn kho, mã `_id` MongoDB, tổng giá trị mặt hàng trong kho.
+   - Hiển thị đầy đủ: Tên sản phẩm, đơn giá VND, số lượng tồn kho, mã `_id` MongoDB.
+   - Thanh nút cố định đáy màn hình: Chỉnh sửa sản phẩm & Xóa.
 3. **Thêm sản phẩm Mobile (`/mobile/add`):**
    - Form nhập: Tên, Đơn giá, Số lượng.
-   - Tích hợp `expo-image-picker`:
-     - Chọn ảnh từ Thư viện thiết bị Android.
-     - Chụp ảnh trực tiếp từ Camera điện thoại.
+   - Tích hợp `expo-image-picker`: Chọn ảnh từ Thư viện / Chụp từ Camera.
    - Tự động upload ảnh lên Backend Multer và lưu vào MongoDB với đúng 4 trường được phép.
 
 ---
@@ -258,24 +262,78 @@ Máy tính đã có sẵn AVD: `Medium_Phone_API_35`.
 
 ## 12. HÌNH ẢNH MINH HỌA CÁC CHỨC NĂNG
 
-### 12.1. Phân hệ Web Admin
-- **Đăng nhập Web:** ![Đăng nhập Web Admin](./screenshot_login.png)
-- **Dashboard Tổng quan:** ![Dashboard Tổng quan](./screenshot_dashboard.png)
-- **Quản lý Sản phẩm:** ![Bảng danh sách sản phẩm](./screenshot_products.png)
-- **Hộp thoại Thêm Sản phẩm:** ![Modal Thêm Sản phẩm](./screenshot_add_modal.png)
-- **Hộp thoại Sửa Sản phẩm:** ![Modal Sửa Sản phẩm](./screenshot_edit_modal.png)
-- **Hộp thoại Xác nhận Xóa:** ![Modal Xác nhận Xóa](./screenshot_delete_modal.png)
-- **Responsive Mobile Web:** ![Giao diện Responsive](./screenshot_responsive.png)
+### 12.1. Phân hệ Web Admin – Giao diện Desktop
 
-### 12.2. Phân hệ Mobile Android
-- **Danh sách sản phẩm Mobile:** ![Màn hình chính Mobile](./screenshot_mobile_home.png)
-- **Chi tiết sản phẩm Mobile:** ![Chi tiết sản phẩm Mobile](./screenshot_mobile_detail.png)
-- **Thêm sản phẩm Mobile (Expo Image Picker):** ![Thêm sản phẩm Mobile](./screenshot_mobile_add.png)
+**Đăng nhập Web Admin (giao diện bảo mật, không hiển thị thông tin tài khoản mặc định):**
+![Đăng nhập Web Admin](./screenshot_login.png)
 
-### 12.3. Cơ sở dữ liệu MongoDB
-- **Kiểm tra CSDL MongoDB (Collection `products` và 5 sản phẩm chuẩn 4 trường):** ![Cơ sở dữ liệu MongoDB](./screenshot_mongodb.png)
+**Dashboard – Báo cáo hoạt động kho hàng (4 thẻ StatCard + bảng sản phẩm):**
+![Dashboard Tổng quan](./screenshot_dashboard.png)
+
+**Quản lý sản phẩm – Bảng danh sách chuyên nghiệp Desktop (5 sản phẩm, logo, ID, giá VND, badge tồn kho):**
+![Bảng danh sách sản phẩm Desktop](./screenshot_products.png)
+
+**Hồ sơ cửa hàng – Nhấn logo/tiêu đề để mở (tuỳ chỉnh logo, xem thông tin quản trị viên):**
+![Hồ sơ cửa hàng](./screenshot_store_profile.png)
+
+**Hộp thoại Thêm sản phẩm mới (form tải ảnh + nhập tên, giá, số lượng):**
+![Modal Thêm Sản phẩm](./screenshot_add_modal.png)
+
+**Hộp thoại Chỉnh sửa sản phẩm (form điền sẵn thông tin hiện tại):**
+![Modal Sửa Sản phẩm](./screenshot_edit_modal.png)
+
+**Hộp thoại Xác nhận Xóa (hiển thị tên sản phẩm, nút Xác nhận màu đỏ):**
+![Modal Xác nhận Xóa](./screenshot_delete_modal.png)
+
+---
+
+### 12.2. Phân hệ Web Admin – Giao diện Mobile Responsive
+
+**Danh sách sản phẩm Mobile Web (card + search + filter + FAB ➕):**
+![Giao diện Mobile Responsive](./screenshot_responsive.png)
+
+---
+
+### 12.3. Phân hệ Mobile Android
+
+**Màn hình danh sách sản phẩm Mobile Android (card, giá VND, tồn kho):**
+![Màn hình chính Mobile Android](./screenshot_mobile_home.png)
+
+**Chi tiết sản phẩm (Hero image, số lượng tồn kho, mã ID, thanh nút đáy):**
+![Chi tiết sản phẩm Mobile](./screenshot_mobile_detail.png)
+
+**Thêm sản phẩm Mobile (form + Expo Image Picker chọn ảnh / chụp camera):**
+![Thêm sản phẩm Mobile Android](./screenshot_mobile_add.png)
+
+---
+
+### 12.4. Cơ sở dữ liệu MongoDB
+
+**Kiểm tra Collection `products` – 5 sản phẩm chuẩn 4 trường (không có `__v` hay trường thừa):**
+![Cơ sở dữ liệu MongoDB](./screenshot_mongodb.png)
+
+---
+
+### 12.5. Kiểm thử CRUD
+
+**Kiểm thử Tạo sản phẩm (Create):**
+![Kiểm thử Tạo sản phẩm](./screenshot_crud_create.png)
+
+**Kiểm thử Cập nhật sản phẩm (Update):**
+![Kiểm thử Sửa sản phẩm](./screenshot_crud_update.png)
+
+**Kiểm thử Xóa sản phẩm (Delete):**
+![Kiểm thử Xóa sản phẩm](./screenshot_crud_delete.png)
 
 ---
 
 ## 13. KẾT LUẬN
 Dự án đã hoàn thành trọn vẹn cả phân hệ Web Admin và Mobile Android kết nối chung cơ sở dữ liệu MongoDB, đáp ứng tuyệt đối toàn bộ yêu cầu của đề bài thi.
+
+**Điểm nổi bật của giao diện đã hoàn thiện:**
+- Navbar Web desktop đầy đủ: Logo cửa hàng tuỳ chỉnh, tabs điều hướng, nút Thêm sản phẩm, pill user Admin, nút Đăng xuất.
+- Màn hình Mobile: Header compact với logo + tiêu đề + nút hamburger ☰, không hiển thị chữ "Admin" hay phân hệ thừa.
+- Hồ sơ cửa hàng: Modal popup khi nhấn logo/tiêu đề, hiển thị thông tin cửa hàng, hỗ trợ upload & chọn logo preset.
+- Modal chi tiết sản phẩm (web/mobile): Ảnh hero lớn, thông tin tồn kho, mã ID MongoDB, thanh nút Chỉnh sửa & Xóa.
+- Bảo mật: Màn hình đăng nhập không hiển thị thông tin tài khoản mặc định; mọi API sửa/xóa đều yêu cầu JWT.
+- Dữ liệu MongoDB: Đúng 5 sản phẩm, đúng 4 trường, không có `__v` hay timestamp thừa.
