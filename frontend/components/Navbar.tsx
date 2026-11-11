@@ -136,7 +136,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           activeOpacity={0.85}
         >
           <Text style={styles.brandTitle} numberOfLines={1}>Quản Lý Bán Hàng</Text>
-          <Text style={styles.brandSub}>Chạm để xem &amp; sửa logo cửa hàng</Text>
         </TouchableOpacity>
 
         {/* Cột phải: Nút hamburger ☰ */}
@@ -367,13 +366,6 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: -0.4,
     textAlign: 'center',
-  },
-  brandSub: {
-    color: 'rgba(255,255,255,0.65)',
-    fontSize: 10,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginTop: 2,
   },
   hamburgerBtn: {
     width: 50,
