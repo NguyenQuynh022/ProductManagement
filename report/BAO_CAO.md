@@ -138,6 +138,7 @@ ProductManagement/
 │   ├── screenshot_mobile_home.png# Ảnh Màn hình chính Mobile Android
 │   ├── screenshot_mobile_detail.png# Ảnh Chi tiết sản phẩm Mobile Android
 │   ├── screenshot_mobile_add.png# Ảnh Thêm sản phẩm Mobile Android
+│   ├── screenshot_mongodb.png   # Ảnh kiểm tra CSDL MongoDB (4 trường dữ liệu)
 │   ├── screenshot_crud_create.png# Ảnh kiểm thử Tạo sản phẩm
 │   ├── screenshot_crud_update.png# Ảnh kiểm thử Sửa sản phẩm
 │   └── screenshot_crud_delete.png# Ảnh kiểm thử Xóa sản phẩm
@@ -270,6 +271,9 @@ Máy tính đã có sẵn AVD: `Medium_Phone_API_35`.
 - **Danh sách sản phẩm Mobile:** ![Màn hình chính Mobile](./screenshot_mobile_home.png)
 - **Chi tiết sản phẩm Mobile:** ![Chi tiết sản phẩm Mobile](./screenshot_mobile_detail.png)
 - **Thêm sản phẩm Mobile (Expo Image Picker):** ![Thêm sản phẩm Mobile](./screenshot_mobile_add.png)
+
+### 12.3. Cơ sở dữ liệu MongoDB
+- **Kiểm tra CSDL MongoDB (Collection `products` và 5 sản phẩm chuẩn 4 trường):** ![Cơ sở dữ liệu MongoDB](./screenshot_mongodb.png)
 
 ---
 
