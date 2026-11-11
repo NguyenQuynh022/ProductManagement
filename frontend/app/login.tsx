@@ -52,13 +52,13 @@ export default function LoginScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
-          {/* Header ResQ */}
+          {/* Header Quản Lý Bán Hàng */}
           <View style={styles.header}>
             <View style={styles.logoBadge}>
-              <Text style={styles.logoText}>🍃</Text>
+              <Text style={styles.logoText}>🛍️</Text>
             </View>
-            <Text style={styles.title}>ResQ Store</Text>
-            <Text style={styles.subtitle}>Đăng nhập phân hệ quản trị viên</Text>
+            <Text style={styles.title}>Quản Lý Bán Hàng</Text>
+            <Text style={styles.subtitle}>Đăng nhập phân hệ quản trị viên (Admin)</Text>
           </View>
 
           {/* Error Message */}
@@ -108,13 +108,12 @@ export default function LoginScreen() {
               )}
             </TouchableOpacity>
 
-            {/* Quay lại trang chọn vai trò */}
-            <TouchableOpacity
-              style={styles.storefrontBtn}
-              onPress={() => router.push('/' as any)}
-            >
-              <Text style={styles.storefrontText}>← Quay lại màn hình chọn vai trò</Text>
-            </TouchableOpacity>
+            {/* Thông tin tài khoản mặc định */}
+            <View style={styles.hintBox}>
+              <Text style={styles.hintTitle}>🔑 Tài khoản quản trị mặc định:</Text>
+              <Text style={styles.hintText}>Tên đăng nhập: <Text style={styles.hintBold}>admin</Text></Text>
+              <Text style={styles.hintText}>Mật khẩu: <Text style={styles.hintBold}>admin123</Text></Text>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -230,14 +229,27 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 0.5,
   },
-  storefrontBtn: {
-    marginTop: 16,
-    alignItems: 'center',
-    paddingVertical: 6,
+  hintBox: {
+    marginTop: 20,
+    backgroundColor: '#f1f5ee',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#d8e2d4',
   },
-  storefrontText: {
-    fontSize: 13,
+  hintTitle: {
+    fontSize: 12,
+    fontWeight: '800',
     color: '#1b4332',
-    fontWeight: '700',
+    marginBottom: 4,
+  },
+  hintText: {
+    fontSize: 12,
+    color: '#4b5563',
+    lineHeight: 18,
+  },
+  hintBold: {
+    fontWeight: '800',
+    color: '#1b4332',
   },
 });

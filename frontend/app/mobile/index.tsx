@@ -15,6 +15,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { productService } from '../../services/productService';
 import { Product } from '../../types/product';
+import { getProductImageUri } from '../../utils/imageHelper';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (Math.min(width, 600) - 40) / 2;
@@ -69,11 +70,11 @@ export default function MobileProductCatalogScreen() {
       {/* Khung ảnh có bo góc bên trong card */}
       <View style={styles.cardImageWrapper}>
         <Image
-          source={{ uri: item.image }}
+          source={{ uri: getProductImageUri(item.image, item.name) }}
           style={styles.cardImage}
           resizeMode="cover"
         />
-        {/* Huy hiệu góc phải giống chữ FREE trên mẫu */}
+        {/* Huy hiệu góc phải */}
         <View style={styles.badgePill}>
           <Text style={styles.badgeText}>CHÍNH HÃNG</Text>
         </View>
@@ -97,7 +98,7 @@ export default function MobileProductCatalogScreen() {
           activeOpacity={0.85}
           onPress={() => router.push(`/mobile/detail/${item._id}` as any)}
         >
-          <Text style={styles.claimButtonText}>Xem</Text>
+          <Text style={styles.claimButtonText}>Chi tiết</Text>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -107,19 +108,19 @@ export default function MobileProductCatalogScreen() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
 
-      {/* Header chuẩn mẫu: Nút tròn Back < | Tiêu đề giữa | Nút tròn ... */}
+      {/* Header chuẩn: Nút tròn Back < | Tiêu đề giữa | Nút tròn ... */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.circularBtn} onPress={() => router.push('/' as any)}>
+        <TouchableOpacity style={styles.circularBtn} onPress={() => router.push('/admin/products' as any)}>
           <Text style={styles.circularBtnIcon}>‹</Text>
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Góc Sản Phẩm ResQ</Text>
+        <Text style={styles.headerTitle}>Quản Lý Bán Hàng</Text>
 
         <TouchableOpacity 
           style={styles.circularBtn} 
           onPress={() => router.push('/admin/products' as any)}
         >
-          <Text style={styles.circularBtnIcon}>•••</Text>
+          <Text style={styles.circularBtnIcon}>🏪</Text>
         </TouchableOpacity>
       </View>
 
@@ -142,18 +143,18 @@ export default function MobileProductCatalogScreen() {
         }
         ListHeaderComponent={
           <>
-            {/* Thẻ Hero Card trên cùng giống ảnh 2 (Community Sharing Maps) */}
+            {/* Thẻ Hero Card trên cùng */}
             <View style={styles.topHeroCard}>
               <Image
-                source={{ uri: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80' }}
+                source={{ uri: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=500&q=80' }}
                 style={styles.topHeroImage}
                 resizeMode="cover"
               />
               <View style={styles.topHeroContent}>
-                <Text style={styles.topHeroTag}>BỘ SƯU TẬP CHỌN LỌC</Text>
-                <Text style={styles.topHeroTitle}>Sản phẩm tốt, giá sẻ chia</Text>
+                <Text style={styles.topHeroTag}>KHO HÀNG & BÁN HÀNG</Text>
+                <Text style={styles.topHeroTitle}>Sản phẩm kinh doanh</Text>
                 <Text style={styles.topHeroDesc}>
-                  Khám phá các sản phẩm chất lượng cao được cập nhật và kiểm duyệt trực tiếp.
+                  Hệ thống quản lý sản phẩm, tồn kho và đơn giá đồng bộ trực tiếp từ MongoDB.
                 </Text>
               </View>
             </View>
@@ -174,7 +175,7 @@ export default function MobileProductCatalogScreen() {
                 onPress={() => handleFilterPress('price_asc', 'price_asc')}
               >
                 <Text style={[styles.filterPillText, activeFilter === 'price_asc' && styles.filterPillTextActive]}>
-                  Giá tốt
+                  Giá thấp
                 </Text>
               </TouchableOpacity>
 
@@ -183,14 +184,14 @@ export default function MobileProductCatalogScreen() {
                 onPress={() => handleFilterPress('soluong_desc', 'soluong_desc')}
               >
                 <Text style={[styles.filterPillText, activeFilter === 'soluong_desc' && styles.filterPillTextActive]}>
-                  Có sẵn ngay
+                  Kho nhiều
                 </Text>
               </TouchableOpacity>
             </View>
 
-            {/* Tiêu đề phân mục: "Available near you" ... "4 offers" */}
+            {/* Tiêu đề phân mục */}
             <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>Sản phẩm dành cho bạn</Text>
+              <Text style={styles.sectionTitle}>Sản phẩm trong kho</Text>
               <Text style={styles.sectionOfferCount}>{products.length} sản phẩm</Text>
             </View>
           </>

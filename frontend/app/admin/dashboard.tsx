@@ -15,6 +15,7 @@ import { StatCard } from '../../components/StatCard';
 import { productService } from '../../services/productService';
 import { authService } from '../../services/authService';
 import { Product } from '../../types/product';
+import { getProductImageUri } from '../../utils/imageHelper';
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -72,7 +73,7 @@ export default function DashboardScreen() {
 
   return (
     <View style={styles.container}>
-      <Navbar username={adminName} />
+      <Navbar username={adminName} productCount={products.length} />
 
       <ScrollView
         style={styles.mainScroll}
@@ -158,7 +159,7 @@ export default function DashboardScreen() {
                 {products.map((item) => (
                   <View key={item._id} style={styles.productRow}>
                     <Image
-                      source={{ uri: item.image }}
+                      source={{ uri: getProductImageUri(item.image, item.name) }}
                       style={styles.thumbImage}
                       resizeMode="cover"
                     />
