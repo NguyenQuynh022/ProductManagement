@@ -107,13 +107,6 @@ export default function LoginScreen() {
                 <Text style={styles.loginBtnText}>ĐĂNG NHẬP QUẢN TRỊ</Text>
               )}
             </TouchableOpacity>
-
-            {/* Thông tin tài khoản mặc định */}
-            <View style={styles.hintBox}>
-              <Text style={styles.hintTitle}>🔑 Tài khoản quản trị mặc định:</Text>
-              <Text style={styles.hintText}>Tên đăng nhập: <Text style={styles.hintBold}>admin</Text></Text>
-              <Text style={styles.hintText}>Mật khẩu: <Text style={styles.hintBold}>admin123</Text></Text>
-            </View>
           </View>
         </View>
       </ScrollView>
@@ -228,28 +221,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
     letterSpacing: 0.5,
-  },
-  hintBox: {
-    marginTop: 20,
-    backgroundColor: '#f1f5ee',
-    borderRadius: 14,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#d8e2d4',
-  },
-  hintTitle: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#1b4332',
-    marginBottom: 4,
-  },
-  hintText: {
-    fontSize: 12,
-    color: '#4b5563',
-    lineHeight: 18,
-  },
-  hintBold: {
-    fontWeight: '800',
-    color: '#1b4332',
   },
 });
