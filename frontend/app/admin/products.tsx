@@ -150,17 +150,29 @@ export default function ProductsScreen() {
           />
         }
       >
-        {/* ── Tiêu đề trang (không có nút Thêm SP nữa) ── */}
+        {/* ── Tiêu đề trang ── */}
         <View style={styles.titleBanner}>
           <View style={styles.titleLeft}>
             <Text style={styles.pageTitle}>Quản Lý Sản Phẩm</Text>
             <Text style={styles.pageSubtitle}>
-              {products.length} mặt hàng đang kinh doanh
+              {products.length} mặt hàng đang kinh doanh trong hệ thống
             </Text>
           </View>
-          <View style={styles.statsBadge}>
-            <Text style={styles.statsBadgeNum}>{products.length}</Text>
-            <Text style={styles.statsBadgeLabel}>SP</Text>
+
+          <View style={styles.titleRight}>
+            {!isMobile && (
+              <TouchableOpacity
+                style={styles.desktopBannerAddBtn}
+                onPress={handleOpenAddModal}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.desktopBannerAddBtnText}>➕ Thêm sản phẩm mới</Text>
+              </TouchableOpacity>
+            )}
+            <View style={styles.statsBadge}>
+              <Text style={styles.statsBadgeNum}>{products.length}</Text>
+              <Text style={styles.statsBadgeLabel}>SP</Text>
+            </View>
           </View>
         </View>
 
@@ -173,9 +185,9 @@ export default function ProductsScreen() {
           </View>
         )}
 
-        {/* ── Thanh tìm kiếm ── */}
-        <View style={styles.searchCard}>
-          <View style={styles.searchBar}>
+        {/* ── Thanh tìm kiếm & bộ lọc ── */}
+        <View style={[styles.searchCard, !isMobile && styles.searchCardDesktop]}>
+          <View style={[styles.searchBar, !isMobile && styles.searchBarDesktop]}>
             <Text style={styles.searchIcon}>🔍</Text>
             <TextInput
               style={styles.searchInput}
@@ -196,7 +208,11 @@ export default function ProductsScreen() {
           </View>
 
           {/* Chips sắp xếp */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sortFilterGroup}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={[styles.sortFilterGroup, !isMobile && styles.sortFilterGroupDesktop]}
+          >
             {[
               { label: 'Tất cả', value: '' },
               { label: 'Giá thấp ↗', value: 'price_asc' },
@@ -277,15 +293,15 @@ export default function ProductsScreen() {
             })}
           </View>
         ) : (
-          /* ── DESKTOP: Bảng ── */
+          /* ── DESKTOP: Bảng sản phẩm chuẩn web cân đối ── */
           <View style={styles.tableCard}>
             <View style={styles.tableHeader}>
-              <Text style={[styles.th, { width: 50 }]}>#</Text>
-              <Text style={[styles.th, { width: 80 }]}>Hình ảnh</Text>
-              <Text style={[styles.th, { flex: 2 }]}>Tên sản phẩm</Text>
-              <Text style={[styles.th, { flex: 1 }]}>Đơn giá</Text>
-              <Text style={[styles.th, { width: 110 }]}>Tồn kho</Text>
-              <Text style={[styles.th, { width: 160, textAlign: 'center' }]}>Thao tác</Text>
+              <Text style={[styles.th, { width: 50, textAlign: 'center' }]}>#</Text>
+              <Text style={[styles.th, { width: 80, textAlign: 'center' }]}>Hình ảnh</Text>
+              <Text style={[styles.th, { flex: 3 }]}>Tên sản phẩm</Text>
+              <Text style={[styles.th, { flex: 2 }]}>Đơn giá</Text>
+              <Text style={[styles.th, { width: 140, textAlign: 'center' }]}>Tồn kho</Text>
+              <Text style={[styles.th, { width: 170, textAlign: 'center' }]}>Thao tác</Text>
             </View>
 
             {products.map((item, index) => {
@@ -297,22 +313,35 @@ export default function ProductsScreen() {
                   activeOpacity={0.85}
                   onPress={() => openDetail(item)}
                 >
-                  <Text style={[styles.td, { width: 50, color: '#888' }]}>{index + 1}</Text>
-                  <View style={[styles.cell, { width: 80 }]}>
+                  <Text style={[styles.td, { width: 50, textAlign: 'center', color: '#9ca3af', fontWeight: '700' }]}>
+                    {index + 1}
+                  </Text>
+                  <View style={[styles.cell, { width: 80, alignItems: 'center' }]}>
                     <Image source={{ uri: displayImage }} style={styles.productImage} resizeMode="cover" />
                   </View>
-                  <View style={[styles.cell, { flex: 2 }]}>
+                  <View style={[styles.cell, { flex: 3 }]}>
                     <Text style={styles.productName}>{item.name}</Text>
+                    <Text style={styles.productIdSub}>ID: {item._id}</Text>
                   </View>
-                  <Text style={[styles.td, styles.priceText, { flex: 1 }]}>{formatVND(item.price)}</Text>
-                  <View style={[styles.cell, { width: 110 }]}>
-                    <Text style={styles.stockText}>{item.soluong} chiếc</Text>
+                  <Text style={[styles.td, styles.priceText, { flex: 2 }]}>
+                    {formatVND(item.price)}
+                  </Text>
+                  <View style={[styles.cell, { width: 140, alignItems: 'center' }]}>
+                    <View style={styles.stockPill}>
+                      <Text style={styles.stockPillText}>Kho: {item.soluong} chiếc</Text>
+                    </View>
                   </View>
-                  <View style={[styles.cell, styles.actionCell, { width: 160 }]}>
-                    <TouchableOpacity style={styles.editBtn} onPress={() => handleOpenEditModal(item)}>
+                  <View style={[styles.cell, styles.actionCell, { width: 170 }]}>
+                    <TouchableOpacity
+                      style={styles.editBtn}
+                      onPress={(e) => { e.stopPropagation?.(); handleOpenEditModal(item); }}
+                    >
                       <Text style={styles.editBtnText}>✏️ Sửa</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.deleteBtn} onPress={() => handleOpenDeleteModal(item)}>
+                    <TouchableOpacity
+                      style={styles.deleteBtn}
+                      onPress={(e) => { e.stopPropagation?.(); handleOpenDeleteModal(item); }}
+                    >
                       <Text style={styles.deleteBtnText}>🗑️ Xóa</Text>
                     </TouchableOpacity>
                   </View>
@@ -323,23 +352,26 @@ export default function ProductsScreen() {
         )}
       </ScrollView>
 
-      {/* ── FAB Thêm sản phẩm ── */}
-      <TouchableOpacity style={styles.fabBtn} activeOpacity={0.85} onPress={handleOpenAddModal}>
-        <Text style={styles.fabIcon}>+</Text>
-      </TouchableOpacity>
+      {/* ── FAB Thêm sản phẩm (chỉ hiển thị trên Mobile) ── */}
+      {isMobile && (
+        <TouchableOpacity style={styles.fabBtn} activeOpacity={0.85} onPress={handleOpenAddModal}>
+          <Text style={styles.fabIcon}>+</Text>
+        </TouchableOpacity>
+      )}
 
-      {/* ── Modal Chi tiết sản phẩm (Màn hình chi tiết độc lập, không bị lộ trang danh sách) ── */}
+      {/* ── Modal Chi tiết sản phẩm ── */}
       <Modal
         visible={detailVisible}
+        transparent={!isMobile}
         animationType="slide"
         onRequestClose={() => setDetailVisible(false)}
       >
-        <SafeAreaView style={styles.detailSafeArea}>
+        <SafeAreaView style={[styles.detailSafeArea, !isMobile && styles.detailSafeAreaDesktop]}>
           <StatusBar style="dark" />
           {detailProduct && (() => {
             const img = getProductImageUri(detailProduct.image, detailProduct.name);
             return (
-              <View style={styles.detailContainer}>
+              <View style={[styles.detailContainer, !isMobile && styles.detailContainerDesktop]}>
                 {/* Thanh tiêu đề chi tiết */}
                 <View style={styles.detailHeader}>
                   <TouchableOpacity
@@ -440,7 +472,7 @@ export default function ProductsScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#f5f7f5' },
   mainScroll: { flex: 1 },
-  scrollContent: { padding: 16, paddingBottom: 100, maxWidth: 1000, width: '100%', alignSelf: 'center' },
+  scrollContent: { padding: 18, paddingBottom: 100, maxWidth: 1240, width: '100%', alignSelf: 'center' },
 
   /* ── Tiêu đề trang ── */
   titleBanner: {
@@ -450,25 +482,48 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     backgroundColor: '#ffffff',
     borderRadius: 20,
-    padding: 18,
+    padding: 20,
     shadowColor: '#1b4332',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07,
     shadowRadius: 6,
     elevation: 2,
+    flexWrap: 'wrap',
+    gap: 12,
   },
-  titleLeft: { flex: 1 },
-  pageTitle: { fontSize: 22, fontWeight: '900', color: '#1b4332', letterSpacing: -0.5 },
+  titleLeft: { flex: 1, minWidth: 260 },
+  pageTitle: { fontSize: 24, fontWeight: '900', color: '#1b4332', letterSpacing: -0.5 },
   pageSubtitle: { fontSize: 13, color: '#6b7280', marginTop: 3 },
+  titleRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  desktopBannerAddBtn: {
+    backgroundColor: '#1b4332',
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 16,
+    shadowColor: '#1b4332',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  desktopBannerAddBtnText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '800',
+  },
   statsBadge: {
-    width: 56,
-    height: 56,
+    width: 52,
+    height: 52,
     borderRadius: 16,
     backgroundColor: '#1b4332',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  statsBadgeNum: { color: '#ffffff', fontSize: 20, fontWeight: '900' },
+  statsBadgeNum: { color: '#ffffff', fontSize: 18, fontWeight: '900' },
   statsBadgeLabel: { color: '#a7f3d0', fontSize: 10, fontWeight: '700' },
 
   /* ── Alert ── */
@@ -493,6 +548,14 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 1,
   },
+  searchCardDesktop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+  },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -501,6 +564,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderWidth: 1,
     borderColor: '#e5e7eb',
+  },
+  searchBarDesktop: {
+    flex: 1,
+    maxWidth: 460,
   },
   searchIcon: { fontSize: 14, marginRight: 6 },
   searchInput: { flex: 1, paddingVertical: 11, fontSize: 14, color: '#111827' },
@@ -514,6 +581,7 @@ const styles = StyleSheet.create({
   },
   searchBtnText: { color: '#ffffff', fontSize: 13, fontWeight: '700' },
   sortFilterGroup: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  sortFilterGroupDesktop: { marginTop: 0 },
   sortChip: {
     paddingHorizontal: 14,
     paddingVertical: 7,
@@ -601,37 +669,76 @@ const styles = StyleSheet.create({
 
   /* ── Desktop Table ── */
   tableCard: {
-    backgroundColor: '#ffffff', borderRadius: 18,
-    borderWidth: 1, borderColor: '#e8ece6', overflow: 'hidden',
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e8ece6',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
   },
   tableHeader: {
     flexDirection: 'row',
     backgroundColor: '#f0f7f4',
     borderBottomWidth: 1,
     borderBottomColor: '#e8ece6',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
   },
-  th: { fontSize: 12, fontWeight: '800', color: '#1b4332', textTransform: 'uppercase', letterSpacing: 0.5 },
+  th: { fontSize: 13, fontWeight: '800', color: '#1b4332', textTransform: 'uppercase', letterSpacing: 0.5 },
   tableRow: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingVertical: 14, paddingHorizontal: 16,
-    borderBottomWidth: 1, borderBottomColor: '#f3f4f6',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
   },
   tableRowAlt: { backgroundColor: '#fafcfa' },
   cell: { justifyContent: 'center' },
-  td: { fontSize: 13, color: '#374151' },
-  productImage: { width: 52, height: 52, borderRadius: 12, backgroundColor: '#f8faf7' },
-  productName: { fontSize: 14, fontWeight: '700', color: '#111827' },
-  priceText: { fontSize: 14, fontWeight: '800', color: '#1b4332' },
-  stockText: { fontSize: 13, color: '#4b5563' },
-  actionCell: { flexDirection: 'row', gap: 8, justifyContent: 'center' },
-  editBtn: { backgroundColor: '#1b4332', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
+  td: { fontSize: 14, color: '#374151' },
+  productImage: {
+    width: 54,
+    height: 54,
+    borderRadius: 14,
+    backgroundColor: '#f8faf7',
+    borderWidth: 1,
+    borderColor: '#e8ece6',
+  },
+  productName: { fontSize: 15, fontWeight: '800', color: '#111827' },
+  productIdSub: { fontSize: 11, color: '#9ca3af', fontFamily: 'monospace', marginTop: 2 },
+  priceText: { fontSize: 15, fontWeight: '900', color: '#1b4332' },
+  stockPill: {
+    backgroundColor: '#ecfdf5',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#d1fae5',
+  },
+  stockPillText: { fontSize: 12, color: '#065f46', fontWeight: '800' },
+  actionCell: { flexDirection: 'row', gap: 10, justifyContent: 'center' },
+  editBtn: {
+    backgroundColor: '#1b4332',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 12,
+  },
   editBtnText: { color: '#ffffff', fontSize: 12, fontWeight: '700' },
-  deleteBtn: { backgroundColor: '#fff5f5', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: '#fecaca' },
+  deleteBtn: {
+    backgroundColor: '#fff5f5',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#fecaca',
+  },
   deleteBtnText: { color: '#dc2626', fontSize: 12, fontWeight: '600' },
 
-  /* ── FAB ── */
+  /* ── FAB (Mobile only) ── */
   fabBtn: {
     position: 'absolute',
     bottom: 28,
@@ -650,21 +757,40 @@ const styles = StyleSheet.create({
   },
   fabIcon: { color: '#ffffff', fontSize: 32, fontWeight: '300', lineHeight: 38 },
 
-  /* ── Màn hình chi tiết sản phẩm toàn màn hình ── */
+  /* ── Màn hình chi tiết sản phẩm ── */
   detailSafeArea: {
     flex: 1,
     backgroundColor: '#ffffff',
+  },
+  detailSafeAreaDesktop: {
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   detailContainer: {
     flex: 1,
     backgroundColor: '#f6f8f5',
   },
+  detailContainerDesktop: {
+    flex: 0,
+    maxWidth: 580,
+    width: '100%',
+    maxHeight: '90%',
+    borderRadius: 24,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 12,
+  },
   detailHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e8ece6',

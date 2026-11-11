@@ -10,6 +10,7 @@ import {
   Image,
   Platform,
   Alert,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
@@ -22,7 +23,7 @@ interface NavbarProps {
   onAddPress?: () => void;
 }
 
-// Danh sách các logo cửa hàng gợi ý đẹp, hiện đại
+// Danh sách logo gợi ý
 const PRESET_LOGOS = [
   {
     name: 'Cửa hàng Boutique',
@@ -49,6 +50,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const router = useRouter();
   const pathname = usePathname();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -74,7 +77,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     router.push(path as any);
   };
 
-  // Chọn ảnh logo từ điện thoại
   const handlePickLogoFromGallery = async () => {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -111,43 +113,114 @@ export const Navbar: React.FC<NavbarProps> = ({
   ];
 
   return (
-    <View>
-      {/* ───────── Thanh header rộng rãi, không bị cấn thanh trạng thái ───────── */}
-      <View style={styles.container}>
+    <View style={styles.navWrapper}>
+      <View style={[styles.container, isMobile ? styles.containerMobile : styles.containerDesktop]}>
+        {isMobile ? (
+          /* ───────── GIAO DIỆN MOBILE (< 768px): 3 CỘT CÂN ĐỐI ───────── */
+          <>
+            {/* Logo */}
+            <TouchableOpacity
+              style={styles.logoBtn}
+              onPress={() => setProfileOpen(true)}
+              activeOpacity={0.85}
+            >
+              <View style={styles.logoBadge}>
+                <Image source={{ uri: storeLogo }} style={styles.logoImage} resizeMode="cover" />
+                <View style={styles.logoEditBadge}>
+                  <Text style={styles.logoEditText}>✏️</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
 
-        {/* Cột trái: Logo cửa hàng có thể bấm đổi ảnh */}
-        <TouchableOpacity
-          style={styles.logoBtn}
-          onPress={() => setProfileOpen(true)}
-          activeOpacity={0.85}
-        >
-          <View style={styles.logoBadge}>
-            <Image source={{ uri: storeLogo }} style={styles.logoImage} resizeMode="cover" />
-            <View style={styles.logoEditBadge}>
-              <Text style={styles.logoEditText}>✏️</Text>
+            {/* Tiêu đề */}
+            <TouchableOpacity
+              style={styles.titleContainer}
+              onPress={() => setProfileOpen(true)}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.brandTitle} numberOfLines={1}>Quản Lý Bán Hàng</Text>
+            </TouchableOpacity>
+
+            {/* Nút ☰ */}
+            <TouchableOpacity
+              style={styles.hamburgerBtn}
+              onPress={() => setMenuOpen(true)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.hamburgerLine} />
+              <View style={styles.hamburgerLine} />
+              <View style={styles.hamburgerLine} />
+            </TouchableOpacity>
+          </>
+        ) : (
+          /* ───────── GIAO DIỆN DESKTOP WEB (>= 768px): THANH ĐIỀU HƯỚNG ĐẦY ĐỦ ───────── */
+          <>
+            {/* Brand Logo & Title nhóm bên trái */}
+            <TouchableOpacity
+              style={styles.desktopBrandGroup}
+              onPress={() => setProfileOpen(true)}
+              activeOpacity={0.85}
+            >
+              <View style={styles.desktopLogoBadge}>
+                <Image source={{ uri: storeLogo }} style={styles.logoImage} resizeMode="cover" />
+                <View style={styles.logoEditBadge}>
+                  <Text style={styles.logoEditText}>✏️</Text>
+                </View>
+              </View>
+              <View>
+                <Text style={styles.desktopBrandTitle}>Quản Lý Bán Hàng</Text>
+                <Text style={styles.desktopBrandSub}>Hệ thống quản trị kho &amp; bán lẻ</Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* Danh sách tab & thao tác bên phải */}
+            <View style={styles.desktopNavGroup}>
+              {navItems.map((item) => {
+                const isActive = pathname === item.path;
+                return (
+                  <TouchableOpacity
+                    key={item.path}
+                    style={[styles.desktopNavItem, isActive && styles.desktopNavItemActive]}
+                    onPress={() => router.push(item.path as any)}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={[styles.desktopNavText, isActive && styles.desktopNavTextActive]}>
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+
+              {onAddPress && (
+                <TouchableOpacity
+                  style={styles.desktopAddBtn}
+                  onPress={onAddPress}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.desktopAddBtnText}>➕ Thêm sản phẩm</Text>
+                </TouchableOpacity>
+              )}
+
+              {/* Huy hiệu Admin */}
+              <TouchableOpacity
+                style={styles.desktopUserBadge}
+                onPress={() => setProfileOpen(true)}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.desktopUserText}>👤 {username}</Text>
+              </TouchableOpacity>
+
+              {/* Nút đăng xuất */}
+              <TouchableOpacity
+                style={styles.desktopLogoutBtn}
+                onPress={handleLogout}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.desktopLogoutText}>Đăng xuất</Text>
+              </TouchableOpacity>
             </View>
-          </View>
-        </TouchableOpacity>
-
-        {/* Cột giữa: Tiêu đề Quản Lý Bán Hàng */}
-        <TouchableOpacity
-          style={styles.titleContainer}
-          onPress={() => setProfileOpen(true)}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.brandTitle} numberOfLines={1}>Quản Lý Bán Hàng</Text>
-        </TouchableOpacity>
-
-        {/* Cột phải: Nút hamburger ☰ */}
-        <TouchableOpacity
-          style={styles.hamburgerBtn}
-          onPress={() => setMenuOpen(true)}
-          activeOpacity={0.8}
-        >
-          <View style={styles.hamburgerLine} />
-          <View style={styles.hamburgerLine} />
-          <View style={styles.hamburgerLine} />
-        </TouchableOpacity>
+          </>
+        )}
       </View>
 
       {/* ───────── Modal: Profile cửa hàng & Chỉnh sửa Logo ───────── */}
@@ -157,12 +230,27 @@ export const Navbar: React.FC<NavbarProps> = ({
         animationType="slide"
         onRequestClose={() => setProfileOpen(false)}
       >
-        <Pressable style={styles.modalOverlay} onPress={() => setProfileOpen(false)}>
-          <Pressable style={styles.profileSheet} onPress={() => {}}>
-            {/* Thanh kéo */}
-            <View style={styles.sheetHandle} />
+        <Pressable
+          style={[styles.modalOverlay, !isMobile && styles.modalOverlayDesktop]}
+          onPress={() => setProfileOpen(false)}
+        >
+          <Pressable
+            style={[styles.profileSheet, !isMobile && styles.profileSheetDesktop]}
+            onPress={() => {}}
+          >
+            {/* Nút đóng / thanh kéo */}
+            {isMobile ? (
+              <View style={styles.sheetHandle} />
+            ) : (
+              <View style={styles.desktopModalHeader}>
+                <Text style={styles.desktopModalTitle}>Hồ Sơ Cửa Hàng</Text>
+                <TouchableOpacity onPress={() => setProfileOpen(false)}>
+                  <Text style={styles.desktopModalClose}>✕</Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
-            {/* Avatar cửa hàng kèm nút đổi ảnh */}
+            {/* Avatar cửa hàng */}
             <View style={styles.profileAvatarWrap}>
               <View style={styles.profileAvatar}>
                 <Image source={{ uri: storeLogo }} style={styles.profileAvatarImg} resizeMode="cover" />
@@ -182,14 +270,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             <View style={styles.profileDivider} />
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              {/* Nút đổi ảnh logo từ điện thoại */}
+              {/* Nút đổi ảnh logo */}
               <TouchableOpacity
                 style={styles.pickPhotoBtn}
                 onPress={handlePickLogoFromGallery}
                 activeOpacity={0.85}
               >
                 <Text style={styles.pickPhotoIcon}>🖼️</Text>
-                <Text style={styles.pickPhotoText}>Tải logo mới từ thư viện ảnh</Text>
+                <Text style={styles.pickPhotoText}>Tải logo mới từ máy tính / điện thoại</Text>
               </TouchableOpacity>
 
               {/* Bộ sưu tập logo mẫu */}
@@ -245,7 +333,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </Pressable>
       </Modal>
 
-      {/* ───────── Modal: Menu hamburger ───────── */}
+      {/* ───────── Modal: Menu hamburger trên Mobile ───────── */}
       <Modal
         visible={menuOpen}
         transparent
@@ -254,7 +342,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       >
         <Pressable style={styles.dropdownOverlay} onPress={() => setMenuOpen(false)}>
           <View style={styles.dropdownMenu}>
-            {/* Tiêu đề menu */}
             <View style={styles.menuHeader}>
               <Text style={styles.menuHeaderTitle}>Menu Quản Trị</Text>
               <TouchableOpacity onPress={() => setMenuOpen(false)}>
@@ -264,7 +351,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             <View style={styles.menuDivider} />
 
-            {/* Mục điều hướng */}
             {navItems.map((item) => {
               const isActive = pathname === item.path;
               return (
@@ -308,23 +394,39 @@ export const Navbar: React.FC<NavbarProps> = ({
 };
 
 const styles = StyleSheet.create({
-  /* ── Header 3 cột rộng rãi, đẩy xuống dưới thanh trạng thái ── */
-  container: {
+  navWrapper: {
     backgroundColor: '#1b4332',
-    paddingTop: Platform.OS === 'android' ? 38 : (Platform.OS === 'ios' ? 46 : 18),
-    paddingBottom: 16,
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.18,
     shadowRadius: 8,
     elevation: 6,
   },
-  logoBtn: {
-    marginRight: 10,
+  container: {
+    backgroundColor: '#1b4332',
+    width: '100%',
   },
+  /* Mobile padding: bù trừ status bar */
+  containerMobile: {
+    paddingTop: Platform.OS === 'android' ? 38 : (Platform.OS === 'ios' ? 46 : 18),
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  /* Desktop padding: cân đối, rộng rãi */
+  containerDesktop: {
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    maxWidth: 1240,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  /* ── Mobile styles ── */
+  logoBtn: { marginRight: 10 },
   logoBadge: {
     width: 50,
     height: 50,
@@ -337,10 +439,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logoImage: {
-    width: '100%',
-    height: '100%',
-  },
+  logoImage: { width: '100%', height: '100%' },
   logoEditBadge: {
     position: 'absolute',
     bottom: -1,
@@ -352,9 +451,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ffffff',
   },
-  logoEditText: {
-    fontSize: 9,
-  },
+  logoEditText: { fontSize: 9 },
   titleContainer: {
     flex: 1,
     alignItems: 'center',
@@ -386,11 +483,106 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
 
+  /* ── Desktop styles ── */
+  desktopBrandGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  desktopLogoBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderWidth: 2,
+    borderColor: '#a7f3d0',
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  desktopBrandTitle: {
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: '900',
+    letterSpacing: -0.4,
+  },
+  desktopBrandSub: {
+    color: '#a7f3d0',
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  desktopNavGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  desktopNavItem: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  desktopNavItemActive: {
+    backgroundColor: '#ffffff',
+  },
+  desktopNavText: {
+    color: '#e5e7eb',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  desktopNavTextActive: {
+    color: '#1b4332',
+    fontWeight: '800',
+  },
+  desktopAddBtn: {
+    backgroundColor: '#2d6a4f',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    marginLeft: 4,
+  },
+  desktopAddBtnText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  desktopUserBadge: {
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 16,
+    marginLeft: 6,
+  },
+  desktopUserText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  desktopLogoutBtn: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 16,
+    marginLeft: 4,
+  },
+  desktopLogoutText: {
+    color: '#1b4332',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+
   /* ── Modal overlay ── */
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.75)',
     justifyContent: 'flex-end',
+  },
+  modalOverlayDesktop: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   dropdownOverlay: {
     flex: 1,
@@ -399,7 +591,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
 
-  /* ── Profile bottom sheet ── */
+  /* ── Profile sheet ── */
   profileSheet: {
     width: '100%',
     backgroundColor: '#ffffff',
@@ -409,6 +601,37 @@ const styles = StyleSheet.create({
     maxHeight: '85%',
     paddingHorizontal: 22,
     paddingTop: 12,
+  },
+  profileSheetDesktop: {
+    maxWidth: 520,
+    borderRadius: 24,
+    paddingTop: 20,
+    paddingBottom: 24,
+    maxHeight: '90%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  desktopModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f4ee',
+  },
+  desktopModalTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1b4332',
+  },
+  desktopModalClose: {
+    fontSize: 18,
+    color: '#6b7280',
+    fontWeight: '700',
   },
   sheetHandle: {
     width: 40,
@@ -437,10 +660,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
-  profileAvatarImg: {
-    width: '100%',
-    height: '100%',
-  },
+  profileAvatarImg: { width: '100%', height: '100%' },
   avatarEditBtn: {
     position: 'absolute',
     bottom: -2,
@@ -454,9 +674,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarEditIcon: {
-    fontSize: 14,
-  },
+  avatarEditIcon: { fontSize: 14 },
   profileStoreName: {
     fontSize: 22,
     fontWeight: '900',
@@ -489,9 +707,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     gap: 8,
   },
-  pickPhotoIcon: {
-    fontSize: 18,
-  },
+  pickPhotoIcon: { fontSize: 18 },
   pickPhotoText: {
     color: '#1b4332',
     fontSize: 14,

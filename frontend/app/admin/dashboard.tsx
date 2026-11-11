@@ -157,7 +157,12 @@ export default function DashboardScreen() {
 
               <View style={styles.table}>
                 {products.map((item) => (
-                  <View key={item._id} style={styles.productRow}>
+                  <TouchableOpacity
+                    key={item._id}
+                    style={styles.productRow}
+                    activeOpacity={0.85}
+                    onPress={() => router.push('/admin/products')}
+                  >
                     <Image
                       source={{ uri: getProductImageUri(item.image, item.name) }}
                       style={styles.thumbImage}
@@ -167,12 +172,12 @@ export default function DashboardScreen() {
                       <Text style={styles.productName} numberOfLines={1}>
                         {item.name}
                       </Text>
-                      <Text style={styles.stockLabel}>Số lượng tồn: {item.soluong}</Text>
+                      <Text style={styles.stockLabel}>Số lượng tồn: {item.soluong} chiếc</Text>
                     </View>
                     <View style={styles.priceContainer}>
                       <Text style={styles.priceValue}>{formatVND(item.price)}</Text>
                     </View>
-                  </View>
+                  </TouchableOpacity>
                 ))}
               </View>
             </View>
@@ -186,15 +191,15 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f5f7f5',
   },
   mainScroll: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 40,
-    maxWidth: 1100,
+    padding: 20,
+    paddingBottom: 60,
+    maxWidth: 1240,
     width: '100%',
     alignSelf: 'center',
   },
@@ -202,14 +207,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#1b4332',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 6,
+    elevation: 2,
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 12,
   },
   bannerTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '900',
     color: '#1b4332',
+    letterSpacing: -0.4,
   },
   bannerSubtitle: {
     fontSize: 13,
@@ -218,17 +232,22 @@ const styles = StyleSheet.create({
   },
   primaryBtn: {
     backgroundColor: '#1b4332',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 16,
+    shadowColor: '#1b4332',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 3,
   },
   primaryBtnText: {
     color: '#ffffff',
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   loadingContainer: {
-    padding: 40,
+    padding: 48,
     alignItems: 'center',
   },
   loadingText: {
@@ -239,32 +258,38 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 16,
+    gap: 16,
+    marginBottom: 20,
   },
   tableSection: {
     backgroundColor: '#ffffff',
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#e8ece6',
-    padding: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 14,
-    paddingBottom: 10,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '800',
     color: '#111827',
   },
   viewAllBtn: {
-    paddingVertical: 2,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
   },
   viewAllText: {
     fontSize: 13,
@@ -272,28 +297,32 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   table: {
-    gap: 8,
+    gap: 4,
   },
   productRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#f9fafb',
+    borderBottomColor: '#f3f4f6',
     gap: 14,
+    borderRadius: 12,
   },
   thumbImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: 52,
+    height: 52,
+    borderRadius: 14,
     backgroundColor: '#f8faf7',
+    borderWidth: 1,
+    borderColor: '#e8ece6',
   },
   productInfo: {
     flex: 1,
   },
   productName: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '800',
     color: '#111827',
   },
   stockLabel: {
@@ -305,7 +334,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   priceValue: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '900',
     color: '#1b4332',
   },
