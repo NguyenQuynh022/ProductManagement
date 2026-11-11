@@ -4,44 +4,43 @@ import { Product } from '../types/product';
 
 interface DeleteConfirmModalProps {
   visible: boolean;
-  product: Product | null;
+  product?: Product | null;
+  productName?: string;
   loading: boolean;
-  onCancel: () => void;
+  onCancel?: () => void;
+  onClose?: () => void;
   onConfirm: () => void;
 }
 
 export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
   visible,
   product,
+  productName,
   loading,
   onCancel,
+  onClose,
   onConfirm,
 }) => {
-  if (!product) return null;
+  const name = productName || product?.name || 'sản phẩm này';
+  const handleClose = onCancel || onClose || (() => {});
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
       <View style={styles.overlay}>
         <View style={styles.box}>
-          <View style={styles.iconCircle}>
-            <Text style={styles.iconText}>⚠️</Text>
-          </View>
-          <Text style={styles.title}>Xác Nhận Xóa Sản Phẩm</Text>
+          <Text style={styles.iconText}>🗑️</Text>
+          <Text style={styles.title}>Xóa sản phẩm</Text>
           <Text style={styles.message}>
-            Bạn có chắc chắn muốn xóa sản phẩm{' '}
-            <Text style={styles.productName}>"{product.name}"</Text> không?
-          </Text>
-          <Text style={styles.warning}>
-            Lưu ý: Thao tác này sẽ xóa vĩnh viễn sản phẩm khỏi cơ sở dữ liệu MongoDB và không thể hoàn tác!
+            Bạn có chắc chắn muốn xóa <Text style={styles.productName}>"{name}"</Text> không?
           </Text>
 
           <View style={styles.btnRow}>
             <TouchableOpacity
               style={styles.cancelBtn}
-              onPress={onCancel}
+              onPress={handleClose}
               disabled={loading}
             >
-              <Text style={styles.cancelText}>Hủy bỏ</Text>
+              <Text style={styles.cancelText}>Hủy</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -52,7 +51,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
               {loading ? (
                 <ActivityIndicator size="small" color="#ffffff" />
               ) : (
-                <Text style={styles.deleteText}>Xác nhận xóa</Text>
+                <Text style={styles.deleteText}>Xác nhận</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -65,86 +64,74 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
+    padding: 20,
   },
   box: {
     backgroundColor: '#ffffff',
-    borderRadius: 14,
-    padding: 24,
-    maxWidth: 440,
+    borderRadius: 8,
+    padding: 20,
+    maxWidth: 360,
     width: '100%',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  iconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#fee2e2',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
+    shadowRadius: 8,
+    elevation: 6,
   },
   iconText: {
-    fontSize: 28,
+    fontSize: 32,
+    marginBottom: 8,
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#0f172a',
+    color: '#222',
     marginBottom: 8,
   },
   message: {
-    fontSize: 14,
-    color: '#475569',
+    fontSize: 13,
+    color: '#666',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 20,
+    lineHeight: 18,
   },
   productName: {
     fontWeight: '700',
-    color: '#ef4444',
-  },
-  warning: {
-    fontSize: 12,
-    color: '#94a3b8',
-    textAlign: 'center',
-    marginBottom: 24,
+    color: '#ee4d2d',
   },
   btnRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
     width: '100%',
   },
   cancelBtn: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#f1f5f9',
+    paddingVertical: 10,
+    borderRadius: 4,
+    backgroundColor: '#f5f5f5',
+    borderWidth: 1,
+    borderColor: '#ddd',
     alignItems: 'center',
   },
   cancelText: {
-    color: '#475569',
+    color: '#666',
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: 13,
   },
   deleteBtn: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#ef4444',
+    paddingVertical: 10,
+    borderRadius: 4,
+    backgroundColor: '#ee4d2d', // Shopee Red Orange
     alignItems: 'center',
   },
   deleteText: {
     color: '#ffffff',
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 13,
   },
 });
-

@@ -55,7 +55,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     setError(null);
   }, [product, visible]);
 
-  // Xử lý chọn file ảnh từ máy tính (hỗ trợ Web và Mobile)
+  // Web file input
   const handlePickFileWeb = async (event: any) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -78,7 +78,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     }
   };
 
-  // Android/iOS: dùng expo-image-picker để chọn ảnh từ thư viện
+  // Android/iOS: expo-image-picker
   const handlePickImageNative = async () => {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -107,7 +107,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           if (res.success && res.image) {
             setImage(res.image);
           } else {
-            setError('Không nhận được đường dẫn ảnh từ máy chủ.');
+            setError('Không nhận được link ảnh từ máy chủ.');
           }
         } catch (err: any) {
           setError(err.response?.data?.message || 'Lỗi tải ảnh lên server');
@@ -133,7 +133,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   };
 
   const handleSubmit = async () => {
-    // 1. Validation
     if (!name.trim()) {
       setError('Vui lòng nhập tên sản phẩm.');
       return;
@@ -141,18 +140,18 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
     const numPrice = Number(price);
     if (price.trim() === '' || isNaN(numPrice) || numPrice < 0) {
-      setError('Giá sản phẩm phải là một số không âm.');
+      setError('Giá sản phẩm không hợp lệ.');
       return;
     }
 
     const numSoluong = Number(soluong);
     if (soluong.trim() === '' || isNaN(numSoluong) || numSoluong < 0) {
-      setError('Số lượng sản phẩm phải là một số không âm.');
+      setError('Số lượng kho không hợp lệ.');
       return;
     }
 
     if (!image.trim()) {
-      setError('Vui lòng nhập link ảnh hoặc tải ảnh từ máy tính.');
+      setError('Vui lòng tải ảnh sản phẩm.');
       return;
     }
 
@@ -160,7 +159,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setSubmitting(true);
       setError(null);
 
-      // Đảm bảo chỉ gửi đúng 4 trường theo quy định đề bài: name, price, soluong, image
+      // Chỉ gửi 4 trường: name, price, soluong, image
       const payload = {
         name: name.trim(),
         price: numPrice,
@@ -180,7 +179,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         onClose();
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Lỗi khi lưu sản phẩm. Vui lòng thử lại.');
+      setError(err.response?.data?.message || 'Lỗi khi lưu sản phẩm.');
     } finally {
       setSubmitting(false);
     }
@@ -190,10 +189,10 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.modalBox}>
-          {/* Header */}
+          {/* Header Shopee Seller */}
           <View style={styles.header}>
             <Text style={styles.headerTitle}>
-              {isEdit ? '✏️ Chỉnh Sửa Sản Phẩm' : '➕ Thêm Sản Phẩm Mới'}
+              {isEdit ? 'Chỉnh Sửa Sản Phẩm' : 'Thêm Sản Phẩm Mới'}
             </Text>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
               <Text style={styles.closeText}>✕</Text>
@@ -207,76 +206,43 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
               </View>
             )}
 
-            {/* Tên sản phẩm */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>
-                Tên sản phẩm <Text style={styles.required}>*</Text>
-              </Text>
-              <TextInput
-                style={styles.input}
-                value={name}
-                onChangeText={setName}
-                placeholder="Ví dụ: iPhone 16 Pro Max"
-                placeholderTextColor="#94a3b8"
-              />
-            </View>
-
-            {/* Hàng: Giá và Số lượng */}
-            <View style={styles.row}>
-              <View style={[styles.formGroup, { flex: 1 }]}>
-                <Text style={styles.label}>
-                  Đơn giá (VND) <Text style={styles.required}>*</Text>
-                </Text>
-                <TextInput
-                  style={styles.input}
-                  value={price}
-                  onChangeText={setPrice}
-                  placeholder="22000000"
-                  keyboardType="numeric"
-                  placeholderTextColor="#94a3b8"
-                />
-              </View>
-
-              <View style={[styles.formGroup, { flex: 1 }]}>
-                <Text style={styles.label}>
-                  Số lượng tồn kho <Text style={styles.required}>*</Text>
-                </Text>
-                <TextInput
-                  style={styles.input}
-                  value={soluong}
-                  onChangeText={setSoluong}
-                  placeholder="10"
-                  keyboardType="numeric"
-                  placeholderTextColor="#94a3b8"
-                />
-              </View>
-            </View>
-
-            {/* Hình ảnh */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>
-                Hình ảnh sản phẩm <Text style={styles.required}>*</Text>
-              </Text>
-              <View style={styles.imageInputRow}>
-                <TextInput
-                  style={[styles.input, { flex: 1 }]}
-                  value={image}
-                  onChangeText={setImage}
-                  placeholder="Nhập đường dẫn URL ảnh hoặc bấm Tải ảnh"
-                  placeholderTextColor="#94a3b8"
-                />
+            {/* Chọn hình ảnh Shopee Style */}
+            <View style={styles.imageSection}>
+              <Text style={styles.label}>Hình ảnh sản phẩm *</Text>
+              
+              <View style={styles.imageUploadRow}>
                 <TouchableOpacity
-                  style={styles.uploadBtn}
+                  style={styles.imagePickerBox}
                   onPress={handleNativeImagePick}
                   disabled={uploading}
                 >
                   {uploading ? (
-                    <ActivityIndicator size="small" color="#ffffff" />
+                    <ActivityIndicator size="small" color="#ee4d2d" />
                   ) : (
-                    <Text style={styles.uploadBtnText}>📁 Chọn ảnh</Text>
+                    <>
+                      <Text style={styles.cameraIcon}>📷</Text>
+                      <Text style={styles.imagePickerText}>
+                        {image ? 'Đổi ảnh' : '+ Thêm ảnh'}
+                      </Text>
+                    </>
                   )}
                 </TouchableOpacity>
+
+                {image ? (
+                  <View style={styles.previewBox}>
+                    <Image source={{ uri: image }} style={styles.previewImage} resizeMode="contain" />
+                  </View>
+                ) : null}
               </View>
+
+              {/* Input URL ảnh thủ công */}
+              <TextInput
+                style={[styles.input, { marginTop: 8 }]}
+                value={image}
+                onChangeText={setImage}
+                placeholder="Hoặc dán URL hình ảnh..."
+                placeholderTextColor="#999"
+              />
 
               {/* Ẩn file input phục vụ Web */}
               {Platform.OS === 'web' && (
@@ -288,41 +254,64 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   onChange={handlePickFileWeb}
                 />
               )}
+            </View>
 
-              {/* Xem trước ảnh */}
-              {image ? (
-                <View style={styles.previewContainer}>
-                  <Text style={styles.previewLabel}>Xem trước hình ảnh:</Text>
-                  <Image
-                    source={{ uri: image }}
-                    style={styles.previewImage}
-                    resizeMode="contain"
-                  />
-                </View>
-              ) : null}
+            {/* Tên sản phẩm */}
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Tên sản phẩm *</Text>
+              <TextInput
+                style={styles.input}
+                value={name}
+                onChangeText={setName}
+                placeholder="Nhập tên sản phẩm..."
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            {/* Đơn giá và Số lượng kho */}
+            <View style={styles.row}>
+              <View style={[styles.formGroup, { flex: 1 }]}>
+                <Text style={styles.label}>Giá bán (₫) *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={price}
+                  onChangeText={setPrice}
+                  placeholder="0"
+                  keyboardType="numeric"
+                  placeholderTextColor="#999"
+                />
+              </View>
+
+              <View style={[styles.formGroup, { flex: 1 }]}>
+                <Text style={styles.label}>Kho hàng *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={soluong}
+                  onChangeText={setSoluong}
+                  placeholder="0"
+                  keyboardType="numeric"
+                  placeholderTextColor="#999"
+                />
+              </View>
             </View>
           </ScrollView>
 
-          {/* Footer buttons */}
+          {/* Footer buttons Shopee style */}
           <View style={styles.footer}>
-            <TouchableOpacity
-              style={styles.cancelBtn}
-              onPress={onClose}
-              disabled={submitting}
-            >
-              <Text style={styles.cancelText}>Hủy bỏ</Text>
+            <TouchableOpacity style={styles.cancelBtn} onPress={onClose} disabled={submitting}>
+              <Text style={styles.cancelBtnText}>Hủy bỏ</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.submitBtn}
+              style={[styles.submitBtn, submitting && styles.submitBtnDisabled]}
               onPress={handleSubmit}
-              disabled={submitting || uploading}
+              disabled={submitting}
             >
               {submitting ? (
                 <ActivityIndicator size="small" color="#ffffff" />
               ) : (
-                <Text style={styles.submitText}>
-                  {isEdit ? 'Lưu thay đổi' : 'Thêm sản phẩm'}
+                <Text style={styles.submitBtnText}>
+                  {isEdit ? 'Lưu thay đổi' : 'Hoàn thành'}
                 </Text>
               )}
             </TouchableOpacity>
@@ -336,157 +325,163 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.7)',
-    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
+    alignItems: 'center',
     padding: 16,
   },
   modalBox: {
     backgroundColor: '#ffffff',
-    borderRadius: 14,
+    borderRadius: 8,
     width: '100%',
-    maxWidth: 580,
+    maxWidth: 500,
     maxHeight: '90%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 10,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 8,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-    backgroundColor: '#f8fafc',
+    borderBottomColor: '#f0f0f0',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#0f172a',
+    color: '#222',
   },
   closeBtn: {
-    padding: 6,
+    padding: 4,
   },
   closeText: {
     fontSize: 18,
-    color: '#64748b',
-    fontWeight: '600',
+    color: '#999',
+    fontWeight: 'bold',
   },
   scrollContent: {
-    padding: 24,
+    padding: 18,
   },
   errorBox: {
-    backgroundColor: '#fef2f2',
+    backgroundColor: '#fff0f0',
     borderWidth: 1,
-    borderColor: '#fecaca',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
+    borderColor: '#ffc2c2',
+    borderRadius: 4,
+    padding: 10,
+    marginBottom: 14,
   },
   errorText: {
-    color: '#dc2626',
+    color: '#ee4d2d',
     fontSize: 13,
+  },
+  imageSection: {
+    marginBottom: 14,
+  },
+  imageUploadRow: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  imagePickerBox: {
+    width: 80,
+    height: 80,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#ee4d2d',
+    borderRadius: 4,
+    backgroundColor: '#fffcfb',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cameraIcon: {
+    fontSize: 22,
+  },
+  imagePickerText: {
+    fontSize: 11,
+    color: '#ee4d2d',
     fontWeight: '600',
+    marginTop: 4,
+  },
+  previewBox: {
+    width: 80,
+    height: 80,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#e8e8e8',
+    backgroundColor: '#fafafa',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  previewImage: {
+    width: '100%',
+    height: '100%',
   },
   formGroup: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#334155',
-    marginBottom: 6,
-  },
-  required: {
-    color: '#ef4444',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: '#0f172a',
-    backgroundColor: '#ffffff',
+    marginBottom: 14,
   },
   row: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 12,
   },
-  imageInputRow: {
-    flexDirection: 'row',
-    gap: 10,
-    alignItems: 'center',
-  },
-  uploadBtn: {
-    backgroundColor: '#475569',
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    borderRadius: 8,
-  },
-  uploadBtnText: {
-    color: '#ffffff',
+  label: {
     fontSize: 13,
     fontWeight: '600',
+    color: '#333',
+    marginBottom: 6,
   },
-  previewContainer: {
-    marginTop: 12,
-    padding: 12,
-    backgroundColor: '#f8fafc',
-    borderRadius: 8,
+  input: {
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    alignItems: 'center',
-  },
-  previewLabel: {
-    fontSize: 12,
-    color: '#64748b',
-    marginBottom: 8,
-    alignSelf: 'flex-start',
-  },
-  previewImage: {
-    width: 140,
-    height: 140,
-    borderRadius: 8,
+    borderColor: '#e0e0e0',
+    borderRadius: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    fontSize: 13,
+    color: '#222',
     backgroundColor: '#ffffff',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: 12,
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    gap: 10,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-    backgroundColor: '#f8fafc',
+    borderTopColor: '#f0f0f0',
+    backgroundColor: '#fafafa',
   },
   cancelBtn: {
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#e2e8f0',
+    paddingVertical: 9,
+    paddingHorizontal: 16,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: '#ffffff',
   },
-  cancelText: {
-    color: '#475569',
+  cancelBtnText: {
+    color: '#666',
+    fontSize: 13,
     fontWeight: '600',
-    fontSize: 14,
   },
   submitBtn: {
-    paddingHorizontal: 22,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#2563eb',
+    backgroundColor: '#ee4d2d', // Shopee Orange
+    paddingVertical: 9,
+    paddingHorizontal: 20,
+    borderRadius: 4,
   },
-  submitText: {
+  submitBtnDisabled: {
+    backgroundColor: '#f5a897',
+  },
+  submitBtnText: {
     color: '#ffffff',
+    fontSize: 13,
     fontWeight: '700',
-    fontSize: 14,
   },
 });
-

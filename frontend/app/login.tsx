@@ -33,12 +33,12 @@ export default function LoginScreen() {
 
       const res = await authService.login(username, password);
       if (res.success) {
-        router.replace('/admin/dashboard');
+        router.replace('/admin/products');
       } else {
         setError(res.user?.role || 'Đăng nhập không thành công.');
       }
     } catch (err: any) {
-      const msg = err.response?.data?.message || 'Không thể kết nối đến máy chủ Backend. Vui lòng kiểm tra cổng 5000.';
+      const msg = err.response?.data?.message || 'Không thể kết nối máy chủ.';
       setError(msg);
     } finally {
       setLoading(false);
@@ -52,15 +52,13 @@ export default function LoginScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
-          {/* Header */}
+          {/* Header Shopee */}
           <View style={styles.header}>
             <View style={styles.logoBadge}>
-              <Text style={styles.logoText}>🔐</Text>
+              <Text style={styles.logoText}>S</Text>
             </View>
-            <Text style={styles.title}>Đăng Nhập Quản Trị</Text>
-            <Text style={styles.subtitle}>
-              Hệ thống Quản lý Sản phẩm - Phân hệ Web Admin
-            </Text>
+            <Text style={styles.title}>Shopee</Text>
+            <Text style={styles.subtitle}>Kênh Người Bán &amp; Quản Lý</Text>
           </View>
 
           {/* Error Message */}
@@ -73,48 +71,50 @@ export default function LoginScreen() {
           {/* Form */}
           <View style={styles.form}>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Tên đăng nhập (Username)</Text>
+              <Text style={styles.label}>Tên đăng nhập</Text>
               <TextInput
                 style={styles.input}
                 value={username}
                 onChangeText={setUsername}
-                placeholder="Nhập username"
-                placeholderTextColor="#94a3b8"
+                placeholder="Tên đăng nhập"
+                placeholderTextColor="#999"
                 autoCapitalize="none"
               />
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Mật khẩu (Password)</Text>
+              <Text style={styles.label}>Mật khẩu</Text>
               <TextInput
                 style={styles.input}
                 value={password}
                 onChangeText={setPassword}
-                placeholder="Nhập password"
-                placeholderTextColor="#94a3b8"
+                placeholder="Mật khẩu"
+                placeholderTextColor="#999"
                 secureTextEntry
               />
             </View>
 
-            {/* Login Button */}
+            {/* Login Button Shopee Orange */}
             <TouchableOpacity
               style={[styles.loginBtn, loading && styles.loginBtnDisabled]}
               onPress={handleLogin}
               disabled={loading}
+              activeOpacity={0.85}
             >
               {loading ? (
                 <ActivityIndicator size="small" color="#ffffff" />
               ) : (
-                <Text style={styles.loginBtnText}>ĐĂNG NHẬP VÀO HỆ THỐNG</Text>
+                <Text style={styles.loginBtnText}>ĐĂNG NHẬP</Text>
               )}
             </TouchableOpacity>
-          </View>
 
-          {/* Footer note */}
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>
-              Kết nối cơ sở dữ liệu: MongoDB (ProductManagement)
-            </Text>
+            {/* Quick access to Storefront */}
+            <TouchableOpacity
+              style={styles.storefrontBtn}
+              onPress={() => router.push('/mobile' as any)}
+            >
+              <Text style={styles.storefrontText}>🛍️ Đến trang mua sắm Shopee</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -125,112 +125,110 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: '#ee4d2d', // Shopee Signature Orange
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: 20,
   },
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 32,
+    borderRadius: 8,
+    padding: 28,
     width: '100%',
-    maxWidth: 440,
+    maxWidth: 400,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.2,
-    shadowRadius: 25,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
     elevation: 8,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   logoBadge: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#eff6ff',
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    backgroundColor: '#ee4d2d',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 10,
+    shadowColor: '#ee4d2d',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   logoText: {
-    fontSize: 28,
+    fontSize: 30,
+    fontWeight: '900',
+    color: '#ffffff',
+    marginTop: -2,
   },
   title: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#0f172a',
-    marginBottom: 6,
+    color: '#ee4d2d',
+    letterSpacing: 0.5,
   },
   subtitle: {
-    fontSize: 13,
-    color: '#64748b',
-    textAlign: 'center',
+    fontSize: 12,
+    color: '#777',
+    marginTop: 2,
   },
   errorBox: {
-    backgroundColor: '#fef2f2',
+    backgroundColor: '#fff0f0',
     borderWidth: 1,
-    borderColor: '#fecaca',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 18,
+    borderColor: '#ffc2c2',
+    borderRadius: 4,
+    padding: 10,
+    marginBottom: 14,
   },
   errorText: {
-    color: '#dc2626',
-    fontSize: 13,
+    color: '#ee4d2d',
+    fontSize: 12,
     fontWeight: '600',
-    textAlign: 'center',
   },
   form: {
     width: '100%',
   },
   inputGroup: {
-    marginBottom: 18,
+    marginBottom: 14,
   },
   label: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#334155',
+    color: '#333',
     marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    fontSize: 14,
-    color: '#0f172a',
-    backgroundColor: '#f8fafc',
-  },
-  demoBtn: {
-    marginBottom: 20,
-    alignItems: 'center',
-    paddingVertical: 6,
-  },
-  demoText: {
-    fontSize: 12,
-    color: '#2563eb',
-    fontWeight: '600',
+    borderColor: '#e0e0e0',
+    borderRadius: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 13,
+    color: '#222',
+    backgroundColor: '#fafafa',
   },
   loginBtn: {
-    backgroundColor: '#2563eb',
-    paddingVertical: 13,
-    borderRadius: 8,
+    backgroundColor: '#ee4d2d', // Shopee Orange
+    paddingVertical: 12,
+    borderRadius: 4,
     alignItems: 'center',
-    shadowColor: '#2563eb',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 3,
+    marginTop: 6,
+    shadowColor: '#ee4d2d',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
   },
   loginBtnDisabled: {
-    backgroundColor: '#93c5fd',
+    backgroundColor: '#f5a897',
   },
   loginBtnText: {
     color: '#ffffff',
@@ -238,17 +236,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
   },
-  footer: {
-    marginTop: 24,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
+  storefrontBtn: {
+    marginTop: 14,
     alignItems: 'center',
+    paddingVertical: 6,
   },
-  footerText: {
-    fontSize: 11,
-    color: '#94a3b8',
-    textAlign: 'center',
+  storefrontText: {
+    fontSize: 12,
+    color: '#ee4d2d',
+    fontWeight: '600',
   },
 });
-

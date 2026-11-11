@@ -10,13 +10,15 @@ import {
   ActivityIndicator,
   RefreshControl,
   SafeAreaView,
-  Platform,
+  Dimensions,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { productService } from '../../services/productService';
 import { Product } from '../../types/product';
-import { LAN_HOST, PORT } from '../../constants/api';
+
+const { width } = Dimensions.get('window');
+const COLUMN_WIDTH = (Math.min(width, 600) - 24) / 2;
 
 export default function MobileHomeScreen() {
   const router = useRouter();
@@ -37,10 +39,7 @@ export default function MobileHomeScreen() {
         setProducts(res.data);
       }
     } catch (err: any) {
-      setError(
-        err.response?.data?.message ||
-        `Lỗi kết nối Backend (${LAN_HOST}:${PORT}). Hãy kiểm tra mạng Wi-Fi và đảm bảo Backend đang chạy.`
-      );
+      setError('Không thể kết nối máy chủ. Vui lòng kiểm tra lại mạng.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -57,31 +56,44 @@ export default function MobileHomeScreen() {
   };
 
   const formatVND = (num: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num);
+    return '₫' + new Intl.NumberFormat('vi-VN').format(num);
   };
 
-  const renderProductItem = ({ item }: { item: Product }) => (
+  const renderShopeeProduct = ({ item, index }: { item: Product; index: number }) => (
     <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.85}
+      style={[
+        styles.productCard,
+        { marginRight: index % 2 === 0 ? 8 : 0 },
+      ]}
+      activeOpacity={0.9}
       onPress={() => router.push(`/mobile/detail/${item._id}` as any)}
     >
-      <Image
-        source={{ uri: item.image }}
-        style={styles.cardImage}
-        resizeMode="cover"
-      />
+      {/* Ảnh sản phẩm */}
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: item.image }}
+          style={styles.productImage}
+          resizeMode="cover"
+        />
+        {/* Badge Shopee Yêu thích / Mall */}
+        <View style={styles.mallBadge}>
+          <Text style={styles.mallBadgeText}>Yêu thích</Text>
+        </View>
+      </View>
+
+      {/* Thông tin sản phẩm */}
       <View style={styles.cardInfo}>
-        <Text style={styles.cardName} numberOfLines={2}>
+        <Text style={styles.productName} numberOfLines={2}>
           {item.name}
         </Text>
-        <Text style={styles.cardPrice}>{formatVND(item.price)}</Text>
 
-        <View style={styles.cardMetaRow}>
-          <View style={styles.stockBadge}>
-            <Text style={styles.stockText}>Số lượng: {item.soluong}</Text>
-          </View>
-          <Text style={styles.viewDetailText}>Chi tiết →</Text>
+        <View style={styles.tagRow}>
+          <Text style={styles.freeshipTag}>Freeship Xtra</Text>
+        </View>
+
+        <View style={styles.priceRow}>
+          <Text style={styles.productPrice}>{formatVND(item.price)}</Text>
+          <Text style={styles.stockText}>Kho: {item.soluong}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -91,66 +103,83 @@ export default function MobileHomeScreen() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />
 
-      {/* Header Mobile */}
+      {/* Header Shopee Orange */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>📱 Product Management</Text>
-          <Text style={styles.headerSubtitle}>Phân Hệ Mobile Android</Text>
-        </View>
-        <TouchableOpacity
-          style={styles.addHeaderBtn}
-          onPress={() => router.push('/mobile/add' as any)}
-        >
-          <Text style={styles.addHeaderBtnText}>➕ Thêm SP</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Thông tin kết nối mạng */}
-      <View style={styles.networkBadge}>
-        <View style={styles.onlineDot} />
-        <Text style={styles.networkText}>
-          Backend API: {Platform.OS === 'web' ? 'localhost:5000' : `${LAN_HOST}:${PORT}`} (MongoDB)
-        </Text>
-      </View>
-
-      {/* Thanh tìm kiếm */}
-      <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={styles.searchInput}
-            placeholder="Tìm kiếm sản phẩm trên di động..."
-            placeholderTextColor="#94a3b8"
+            placeholder="Shopee tìm kiếm..."
+            placeholderTextColor="#888"
             value={search}
             onChangeText={handleSearch}
           />
           {search.length > 0 && (
             <TouchableOpacity onPress={() => handleSearch('')}>
-              <Text style={styles.clearIcon}>✕</Text>
+              <Text style={styles.clearSearch}>✕</Text>
             </TouchableOpacity>
           )}
         </View>
+
+        {/* Nút Kênh Quản lý */}
+        <TouchableOpacity
+          style={styles.sellerBtn}
+          onPress={() => router.push('/admin/products' as any)}
+        >
+          <Text style={styles.sellerBtnIcon}>🏪</Text>
+          <Text style={styles.sellerBtnText}>Quản lý</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Nội dung danh sách sản phẩm */}
+      {/* Thanh danh mục / khuyến mãi Shopee */}
+      <View style={styles.bannerStrip}>
+        <View style={styles.bannerItem}>
+          <Text style={styles.bannerIcon}>🚚</Text>
+          <Text style={styles.bannerText}>Freeship 0Đ</Text>
+        </View>
+        <View style={styles.bannerItem}>
+          <Text style={styles.bannerIcon}>⚡</Text>
+          <Text style={styles.bannerText}>Flash Sale</Text>
+        </View>
+        <View style={styles.bannerItem}>
+          <Text style={styles.bannerIcon}>🏷️</Text>
+          <Text style={styles.bannerText}>Shopee Mall</Text>
+        </View>
+        <TouchableOpacity 
+          style={styles.bannerItem}
+          onPress={() => router.push('/mobile/add' as any)}
+        >
+          <Text style={styles.bannerIcon}>➕</Text>
+          <Text style={[styles.bannerText, { color: '#ee4d2d', fontWeight: '700' }]}>Đăng bán</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Tiêu đề mục GỢI Ý HÔM NAY */}
+      <View style={styles.sectionHeader}>
+        <View style={styles.orangeLine} />
+        <Text style={styles.sectionTitle}>GỢI Ý HÔM NAY</Text>
+        <View style={styles.orangeLine} />
+      </View>
+
+      {/* Lưới 2 cột sản phẩm */}
       {error ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorIcon}>⚠️</Text>
-          <Text style={styles.errorText}>{error}</Text>
+        <View style={styles.centerBox}>
+          <Text style={styles.errorText}>⚠️ {error}</Text>
           <TouchableOpacity style={styles.retryBtn} onPress={() => fetchProducts()}>
-            <Text style={styles.retryText}>Thử lại kết nối</Text>
+            <Text style={styles.retryBtnText}>Thử lại</Text>
           </TouchableOpacity>
         </View>
       ) : loading && !refreshing ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#2563eb" />
-          <Text style={styles.loadingText}>Đang tải danh sách sản phẩm...</Text>
+        <View style={styles.centerBox}>
+          <ActivityIndicator size="large" color="#ee4d2d" />
+          <Text style={styles.loadingText}>Đang nạp sản phẩm Shopee...</Text>
         </View>
       ) : (
         <FlatList
           data={products}
+          numColumns={2}
           keyExtractor={(item) => item._id}
-          renderItem={renderProductItem}
+          renderItem={renderShopeeProduct}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -160,30 +189,26 @@ export default function MobileHomeScreen() {
                 setRefreshing(true);
                 fetchProducts(search);
               }}
-              colors={['#2563eb']}
+              colors={['#ee4d2d']}
             />
-          }
-          ListHeaderComponent={
-            <Text style={styles.listHeaderTitle}>
-              Danh Sách Sản Phẩm Hiện Có ({products.length})
-            </Text>
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyIcon}>📦</Text>
-              <Text style={styles.emptyText}>Không tìm thấy sản phẩm phù hợp</Text>
+              <Text style={styles.emptyIcon}>🛍️</Text>
+              <Text style={styles.emptyText}>Không tìm thấy sản phẩm nào</Text>
             </View>
           }
         />
       )}
 
-      {/* Floating Action Button (FAB) */}
+      {/* Nút nổi Đăng Bán Sản Phẩm (Shopee Seller FAB) */}
       <TouchableOpacity
         style={styles.fab}
-        activeOpacity={0.8}
+        activeOpacity={0.85}
         onPress={() => router.push('/mobile/add' as any)}
       >
-        <Text style={styles.fabText}>➕</Text>
+        <Text style={styles.fabIcon}>➕</Text>
+        <Text style={styles.fabText}>Thêm SP</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -192,226 +217,238 @@ export default function MobileHomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f5f5f5', // Shopee Background
   },
   header: {
-    backgroundColor: '#0f172a',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
-  },
-  headerTitle: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  headerSubtitle: {
-    color: '#94a3b8',
-    fontSize: 12,
-  },
-  addHeaderBtn: {
-    backgroundColor: '#2563eb',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  addHeaderBtnText: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  networkBadge: {
-    backgroundColor: '#eff6ff',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    backgroundColor: '#ee4d2d', // Shopee Orange
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#dbeafe',
-  },
-  onlineDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#10b981',
-  },
-  networkText: {
-    fontSize: 11,
-    color: '#1e40af',
-    fontWeight: '600',
-  },
-  searchContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    gap: 10,
   },
   searchBar: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f1f5f9',
-    borderRadius: 10,
-    paddingHorizontal: 12,
+    backgroundColor: '#ffffff',
+    borderRadius: 4,
+    paddingHorizontal: 10,
+    height: 38,
   },
   searchIcon: {
-    fontSize: 16,
-    marginRight: 8,
+    fontSize: 14,
+    marginRight: 6,
   },
   searchInput: {
     flex: 1,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: '#0f172a',
+    fontSize: 13,
+    color: '#222222',
+    paddingVertical: 4,
   },
-  clearIcon: {
+  clearSearch: {
     fontSize: 14,
-    color: '#64748b',
-    padding: 6,
+    color: '#999',
+    padding: 4,
   },
-  listContent: {
-    padding: 16,
-    paddingBottom: 90,
+  sellerBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
   },
-  listHeaderTitle: {
-    fontSize: 14,
+  sellerBtnIcon: {
+    fontSize: 18,
+  },
+  sellerBtnText: {
+    color: '#ffffff',
+    fontSize: 10,
     fontWeight: '700',
-    color: '#475569',
-    marginBottom: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    marginTop: 1,
   },
-  card: {
+  bannerStrip: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    marginBottom: 14,
-    overflow: 'hidden',
     flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
-  cardImage: {
-    width: 100,
-    height: 100,
-    backgroundColor: '#f8fafc',
-  },
-  cardInfo: {
-    flex: 1,
-    padding: 12,
-    justifyContent: 'space-between',
-  },
-  cardName: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  cardPrice: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#2563eb',
-    marginVertical: 4,
-  },
-  cardMetaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  bannerItem: {
     alignItems: 'center',
   },
-  stockBadge: {
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+  bannerIcon: {
+    fontSize: 20,
+    marginBottom: 2,
   },
-  stockText: {
+  bannerText: {
     fontSize: 11,
-    color: '#475569',
+    color: '#555',
     fontWeight: '600',
   },
-  viewDetailText: {
-    fontSize: 12,
-    color: '#2563eb',
-    fontWeight: '700',
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    gap: 8,
   },
-  loadingContainer: {
+  orangeLine: {
+    width: 30,
+    height: 2,
+    backgroundColor: '#ee4d2d',
+  },
+  sectionTitle: {
+    color: '#ee4d2d',
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  listContent: {
+    paddingHorizontal: 8,
+    paddingBottom: 80,
+  },
+  productCard: {
+    width: COLUMN_WIDTH,
+    backgroundColor: '#ffffff',
+    borderRadius: 4,
+    marginBottom: 8,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  imageContainer: {
+    width: '100%',
+    aspectRatio: 1,
+    position: 'relative',
+    backgroundColor: '#fafafa',
+  },
+  productImage: {
+    width: '100%',
+    height: '100%',
+  },
+  mallBadge: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    backgroundColor: '#ee4d2d',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderBottomRightRadius: 4,
+  },
+  mallBadgeText: {
+    color: '#ffffff',
+    fontSize: 9,
+    fontWeight: '800',
+  },
+  cardInfo: {
+    padding: 8,
+    justifyContent: 'space-between',
+    minHeight: 85,
+  },
+  productName: {
+    fontSize: 13,
+    color: '#222222',
+    lineHeight: 17,
+    fontWeight: '500',
+  },
+  tagRow: {
+    marginVertical: 4,
+  },
+  freeshipTag: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#eafbf3',
+    color: '#00bfa5',
+    fontSize: 9,
+    fontWeight: '700',
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 2,
+    borderWidth: 0.5,
+    borderColor: '#00bfa5',
+  },
+  priceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    marginTop: 4,
+  },
+  productPrice: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#ee4d2d', // Shopee Red Orange Price
+  },
+  stockText: {
+    fontSize: 10,
+    color: '#888888',
+  },
+  centerBox: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: 30,
   },
   loadingText: {
-    marginTop: 12,
+    marginTop: 10,
     fontSize: 13,
-    color: '#64748b',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  errorIcon: {
-    fontSize: 40,
-    marginBottom: 12,
+    color: '#777',
   },
   errorText: {
-    fontSize: 14,
-    color: '#dc2626',
-    textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 20,
+    color: '#ee4d2d',
+    fontSize: 13,
+    marginBottom: 12,
   },
   retryBtn: {
-    backgroundColor: '#2563eb',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
+    backgroundColor: '#ee4d2d',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 4,
   },
-  retryText: {
+  retryBtnText: {
     color: '#ffffff',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
   },
   emptyContainer: {
-    padding: 40,
+    padding: 60,
     alignItems: 'center',
   },
   emptyIcon: {
-    fontSize: 44,
+    fontSize: 48,
     marginBottom: 8,
   },
   emptyText: {
-    fontSize: 14,
-    color: '#64748b',
+    fontSize: 13,
+    color: '#777',
   },
   fab: {
     position: 'absolute',
-    bottom: 24,
-    right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#2563eb',
+    bottom: 20,
+    right: 16,
+    backgroundColor: '#ee4d2d',
+    borderRadius: 25,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#2563eb',
-    shadowOffset: { width: 0, height: 6 },
+    gap: 6,
+    shadowColor: '#ee4d2d',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
-    shadowRadius: 10,
+    shadowRadius: 6,
     elevation: 6,
   },
-  fabText: {
-    fontSize: 24,
+  fabIcon: {
     color: '#ffffff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  fabText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '700',
   },
 });
-

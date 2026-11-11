@@ -13,7 +13,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   title,
   value,
   subtext,
-  accentColor = '#3b82f6',
+  accentColor = '#ee4d2d',
   icon = '📦',
 }) => {
   return (

@@ -16,8 +16,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { productService } from '../../services/productService';
-import { authService } from '../../services/authService';
-import { LAN_HOST, PORT } from '../../constants/api';
 
 export default function MobileAddProductScreen() {
   const router = useRouter();
@@ -32,15 +30,12 @@ export default function MobileAddProductScreen() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // 1. Chọn ảnh từ Thư viện (Gallery)
+  // 1. Chọn ảnh từ Thư viện
   const handlePickFromGallery = async () => {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        Alert.alert(
-          'Quyền truy cập',
-          'Ứng dụng cần được cấp quyền truy cập thư viện ảnh để tải lên hình ảnh sản phẩm.'
-        );
+        Alert.alert('Quyền truy cập', 'Vui lòng cấp quyền truy cập thư viện ảnh.');
         return;
       }
 
@@ -59,15 +54,12 @@ export default function MobileAddProductScreen() {
     }
   };
 
-  // 2. Chụp ảnh trực tiếp từ Camera
+  // 2. Chụp ảnh từ Camera
   const handleCaptureFromCamera = async () => {
     try {
       const permission = await ImagePicker.requestCameraPermissionsAsync();
       if (!permission.granted) {
-        Alert.alert(
-          'Quyền máy ảnh',
-          'Ứng dụng cần được cấp quyền sử dụng camera để chụp hình sản phẩm.'
-        );
+        Alert.alert('Quyền máy ảnh', 'Vui lòng cấp quyền truy cập camera.');
         return;
       }
 
@@ -85,7 +77,7 @@ export default function MobileAddProductScreen() {
     }
   };
 
-  // 3. Tải ảnh lên Backend Multer (/api/upload)
+  // 3. Tải ảnh lên Server
   const uploadSelectedImage = async (uri: string) => {
     try {
       setUploading(true);
@@ -101,7 +93,6 @@ export default function MobileAddProductScreen() {
         const blob = await fetchRes.blob();
         formData.append('image', blob, filename);
       } else {
-        // Cú pháp file upload tương thích React Native Android / iOS
         formData.append('image', {
           uri: uri,
           name: filename,
@@ -113,40 +104,36 @@ export default function MobileAddProductScreen() {
       if (uploadRes.success && uploadRes.image) {
         setImage(uploadRes.image);
       } else {
-        setError('Không nhận được đường dẫn ảnh từ máy chủ.');
+        setError('Không nhận được link ảnh từ máy chủ.');
       }
     } catch (err: any) {
-      setError(
-        err.response?.data?.message ||
-        `Lỗi khi tải ảnh lên Backend (${LAN_HOST}:${PORT}). Vui lòng kiểm tra lại kết nối mạng.`
-      );
+      setError('Lỗi khi tải ảnh. Vui lòng kiểm tra kết nối mạng.');
     } finally {
       setUploading(false);
     }
   };
 
-  // 4. Lưu sản phẩm vào MongoDB
+  // 4. Lưu sản phẩm
   const handleSaveProduct = async () => {
-    // Validation
     if (!name.trim()) {
-      setError('Tên sản phẩm không được để trống.');
+      setError('Vui lòng nhập tên sản phẩm.');
       return;
     }
 
     const numPrice = Number(price);
     if (price.trim() === '' || isNaN(numPrice) || numPrice < 0) {
-      setError('Giá sản phẩm phải là một số không âm.');
+      setError('Giá sản phẩm không hợp lệ.');
       return;
     }
 
     const numSoluong = Number(soluong);
     if (soluong.trim() === '' || isNaN(numSoluong) || numSoluong < 0) {
-      setError('Số lượng sản phẩm phải là một số không âm.');
+      setError('Số lượng kho không hợp lệ.');
       return;
     }
 
     if (!image.trim()) {
-      setError('Vui lòng chọn hình ảnh từ thư viện hoặc chụp ảnh trước khi lưu.');
+      setError('Vui lòng chọn hình ảnh sản phẩm.');
       return;
     }
 
@@ -154,7 +141,7 @@ export default function MobileAddProductScreen() {
       setSaving(true);
       setError(null);
 
-      // Chỉ gửi đúng 4 trường được phép theo đề bài: name, price, soluong, image
+      // Chỉ gửi đúng 4 trường: name, price, soluong, image
       const payload = {
         name: name.trim(),
         price: numPrice,
@@ -165,16 +152,13 @@ export default function MobileAddProductScreen() {
       const res = await productService.createProduct(payload);
 
       if (res.success) {
-        setSuccess(`✅ Đã thêm sản phẩm "${res.data.name}" vào MongoDB thành công!`);
+        setSuccess(`Đã đăng bán "${res.data.name}" thành công!`);
         setTimeout(() => {
           router.replace('/mobile' as any);
         }, 1200);
       }
     } catch (err: any) {
-      setError(
-        err.response?.data?.message ||
-        'Không thể lưu sản phẩm. Vui lòng kiểm tra kết nối Backend và thử lại.'
-      );
+      setError(err.response?.data?.message || 'Không thể lưu sản phẩm. Vui lòng thử lại.');
     } finally {
       setSaving(false);
     }
@@ -184,13 +168,13 @@ export default function MobileAddProductScreen() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="light" />
 
-      {/* Header */}
+      {/* Header Shopee Orange */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <Text style={styles.backBtnText}>← Quay lại</Text>
+          <Text style={styles.backBtnText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Thêm Sản Phẩm (Mobile)</Text>
-        <View style={{ width: 60 }} />
+        <Text style={styles.headerTitle}>Đăng Bán Sản Phẩm</Text>
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView
@@ -198,11 +182,6 @@ export default function MobileAddProductScreen() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.formTitle}>Nhập Thông Tin Sản Phẩm</Text>
-        <Text style={styles.formSubtitle}>
-          Dữ liệu sẽ được lưu trực tiếp vào collection `products` trong MongoDB
-        </Text>
-
         {/* Thông báo lỗi / thành công */}
         {error && (
           <View style={styles.errorBox}>
@@ -212,121 +191,117 @@ export default function MobileAddProductScreen() {
 
         {success && (
           <View style={styles.successBox}>
-            <Text style={styles.successText}>{success}</Text>
+            <Text style={styles.successText}>✅ {success}</Text>
           </View>
         )}
 
-        {/* Form fields */}
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>
-            Tên sản phẩm <Text style={styles.required}>*</Text>
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ví dụ: Tai nghe Sony WH-1000XM5"
-            placeholderTextColor="#94a3b8"
-            value={name}
-            onChangeText={setName}
-          />
-        </View>
+        {/* Khối chọn hình ảnh Shopee Style */}
+        <View style={styles.cardSection}>
+          <Text style={styles.sectionHeading}>Hình ảnh sản phẩm *</Text>
+          <Text style={styles.imageTip}>Tải ảnh thật của sản phẩm để người mua dễ nhận biết</Text>
 
-        <View style={styles.row}>
-          <View style={[styles.formGroup, { flex: 1 }]}>
-            <Text style={styles.label}>
-              Đơn giá (VND) <Text style={styles.required}>*</Text>
-            </Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ví dụ: 8500000"
-              placeholderTextColor="#94a3b8"
-              keyboardType="numeric"
-              value={price}
-              onChangeText={setPrice}
-            />
-          </View>
-
-          <View style={[styles.formGroup, { flex: 1 }]}>
-            <Text style={styles.label}>
-              Số lượng <Text style={styles.required}>*</Text>
-            </Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ví dụ: 25"
-              placeholderTextColor="#94a3b8"
-              keyboardType="numeric"
-              value={soluong}
-              onChangeText={setSoluong}
-            />
-          </View>
-        </View>
-
-        {/* Chọn hình ảnh */}
-        <View style={styles.imageSection}>
-          <Text style={styles.label}>
-            Hình ảnh sản phẩm <Text style={styles.required}>*</Text>
-          </Text>
-          <Text style={styles.imageTip}>
-            Chọn ảnh từ thư viện thiết bị Android hoặc nhập đường dẫn ảnh:
-          </Text>
-
-          {/* Các nút chọn ảnh */}
-          <View style={styles.imageActionRow}>
+          <View style={styles.photoRow}>
+            {/* Hộp chọn từ Thư viện */}
             <TouchableOpacity
-              style={styles.pickBtn}
+              style={styles.photoUploadBox}
               onPress={handlePickFromGallery}
               disabled={uploading}
             >
-              <Text style={styles.pickBtnText}>🖼️ Thư viện ảnh</Text>
+              <Text style={styles.photoUploadIcon}>🖼️</Text>
+              <Text style={styles.photoUploadLabel}>Thư viện</Text>
             </TouchableOpacity>
 
+            {/* Hộp chụp ảnh từ Camera */}
             <TouchableOpacity
-              style={styles.cameraBtn}
+              style={styles.photoUploadBox}
               onPress={handleCaptureFromCamera}
               disabled={uploading}
             >
-              <Text style={styles.cameraBtnText}>📷 Chụp ảnh</Text>
+              <Text style={styles.photoUploadIcon}>📷</Text>
+              <Text style={styles.photoUploadLabel}>Chụp ảnh</Text>
             </TouchableOpacity>
+
+            {/* Xem trước ảnh nếu có */}
+            {image ? (
+              <View style={styles.photoPreviewBox}>
+                <Image source={{ uri: image }} style={styles.previewImage} resizeMode="cover" />
+                <View style={styles.checkedBadge}>
+                  <Text style={styles.checkedText}>✓</Text>
+                </View>
+              </View>
+            ) : null}
           </View>
 
-          {/* Nhập URL ảnh thủ công */}
+          {/* Nhập link ảnh thủ công nếu cần */}
           <TextInput
             style={[styles.input, { marginTop: 10 }]}
-            placeholder="Hoặc dán URL ảnh tại đây..."
-            placeholderTextColor="#94a3b8"
+            placeholder="Hoặc dán URL hình ảnh tại đây..."
+            placeholderTextColor="#999"
             value={image}
             onChangeText={setImage}
           />
 
-          {/* Loading khi đang upload */}
           {uploading && (
             <View style={styles.uploadingBox}>
-              <ActivityIndicator size="small" color="#2563eb" />
-              <Text style={styles.uploadingText}>Đang tải hình ảnh lên Backend Multer...</Text>
+              <ActivityIndicator size="small" color="#ee4d2d" />
+              <Text style={styles.uploadingText}>Đang tải ảnh lên...</Text>
             </View>
           )}
-
-          {/* Preview hình ảnh */}
-          {image ? (
-            <View style={styles.previewBox}>
-              <Text style={styles.previewLabel}>Xem trước hình ảnh đã chọn:</Text>
-              <Image source={{ uri: image }} style={styles.previewImage} resizeMode="contain" />
-              <Text style={styles.imageUrlText} numberOfLines={1}>
-                {image}
-              </Text>
-            </View>
-          ) : null}
         </View>
 
-        {/* Nút lưu sản phẩm */}
+        {/* Thông tin cơ bản Shopee Style */}
+        <View style={styles.cardSection}>
+          <Text style={styles.sectionHeading}>Thông tin cơ bản</Text>
+
+          <View style={styles.fieldGroup}>
+            <Text style={styles.label}>Tên sản phẩm *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ví dụ: iPhone 16 Pro Max 256GB"
+              placeholderTextColor="#999"
+              value={name}
+              onChangeText={setName}
+            />
+          </View>
+
+          <View style={styles.row}>
+            <View style={[styles.fieldGroup, { flex: 1 }]}>
+              <Text style={styles.label}>Giá bán (₫) *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="0"
+                placeholderTextColor="#999"
+                keyboardType="numeric"
+                value={price}
+                onChangeText={setPrice}
+              />
+            </View>
+
+            <View style={[styles.fieldGroup, { flex: 1 }]}>
+              <Text style={styles.label}>Kho hàng *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="0"
+                placeholderTextColor="#999"
+                keyboardType="numeric"
+                value={soluong}
+                onChangeText={setSoluong}
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* Nút đăng bán Shopee Orange */}
         <TouchableOpacity
           style={[styles.submitBtn, (saving || uploading) && styles.submitBtnDisabled]}
           onPress={handleSaveProduct}
           disabled={saving || uploading}
+          activeOpacity={0.85}
         >
           {saving ? (
             <ActivityIndicator size="small" color="#ffffff" />
           ) : (
-            <Text style={styles.submitBtnText}>💾 LƯU SẢN PHẨM VÀO MONGODB</Text>
+            <Text style={styles.submitBtnText}>ĐĂNG BÁN SẢN PHẨM</Text>
           )}
         </TouchableOpacity>
       </ScrollView>
@@ -337,26 +312,24 @@ export default function MobileAddProductScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f5f5f5',
   },
   header: {
-    backgroundColor: '#0f172a',
+    backgroundColor: '#ee4d2d', // Shopee Orange
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
   },
   backBtn: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
   },
   backBtnText: {
-    color: '#93c5fd',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#ffffff',
+    fontSize: 22,
+    fontWeight: '700',
   },
   headerTitle: {
     color: '#ffffff',
@@ -367,48 +340,101 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    padding: 12,
     paddingBottom: 40,
   },
-  formTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#0f172a',
+  cardSection: {
+    backgroundColor: '#ffffff',
+    borderRadius: 6,
+    padding: 14,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  sectionHeading: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#222',
     marginBottom: 4,
   },
-  formSubtitle: {
-    fontSize: 13,
-    color: '#64748b',
-    marginBottom: 16,
+  imageTip: {
+    fontSize: 12,
+    color: '#888',
+    marginBottom: 12,
   },
-  errorBox: {
-    backgroundColor: '#fef2f2',
+  photoRow: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+  },
+  photoUploadBox: {
+    width: 80,
+    height: 80,
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#fecaca',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
+    borderStyle: 'dashed',
+    borderColor: '#ee4d2d',
+    backgroundColor: '#fffcfb',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  errorText: {
-    color: '#dc2626',
-    fontSize: 13,
+  photoUploadIcon: {
+    fontSize: 22,
+    marginBottom: 4,
+  },
+  photoUploadLabel: {
+    fontSize: 11,
+    color: '#ee4d2d',
     fontWeight: '600',
   },
-  successBox: {
-    backgroundColor: '#ecfdf5',
+  photoPreviewBox: {
+    width: 80,
+    height: 80,
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#a7f3d0',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
+    borderColor: '#e8e8e8',
+    overflow: 'hidden',
+    position: 'relative',
   },
-  successText: {
-    color: '#059669',
-    fontSize: 13,
-    fontWeight: '700',
+  previewImage: {
+    width: '100%',
+    height: '100%',
   },
-  formGroup: {
-    marginBottom: 16,
+  checkedBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: '#00bfa5',
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkedText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  uploadingBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 10,
+    padding: 8,
+    backgroundColor: '#fff5f3',
+    borderRadius: 4,
+  },
+  uploadingText: {
+    fontSize: 12,
+    color: '#ee4d2d',
+    fontWeight: '600',
+  },
+  fieldGroup: {
+    marginBottom: 12,
   },
   row: {
     flexDirection: 'row',
@@ -416,117 +442,60 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#334155',
+    fontWeight: '600',
+    color: '#333',
     marginBottom: 6,
   },
-  required: {
-    color: '#ef4444',
-  },
   input: {
-    backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: '#0f172a',
-  },
-  imageSection: {
+    borderColor: '#e0e0e0',
+    borderRadius: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    fontSize: 13,
+    color: '#222',
     backgroundColor: '#ffffff',
-    padding: 16,
-    borderRadius: 12,
+  },
+  errorBox: {
+    backgroundColor: '#fff0f0',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    marginBottom: 20,
+    borderColor: '#ffc2c2',
+    borderRadius: 4,
+    padding: 10,
+    marginBottom: 10,
   },
-  imageTip: {
-    fontSize: 12,
-    color: '#64748b',
-    marginBottom: 12,
-  },
-  imageActionRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  pickBtn: {
-    flex: 1,
-    backgroundColor: '#3b82f6',
-    paddingVertical: 11,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  pickBtnText: {
-    color: '#ffffff',
+  errorText: {
+    color: '#ee4d2d',
     fontSize: 13,
-    fontWeight: '700',
-  },
-  cameraBtn: {
-    flex: 1,
-    backgroundColor: '#475569',
-    paddingVertical: 11,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  cameraBtnText: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  uploadingBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 12,
-    padding: 8,
-    backgroundColor: '#eff6ff',
-    borderRadius: 6,
-  },
-  uploadingText: {
-    fontSize: 12,
-    color: '#2563eb',
     fontWeight: '600',
   },
-  previewBox: {
-    marginTop: 14,
-    padding: 12,
-    backgroundColor: '#f8fafc',
-    borderRadius: 8,
+  successBox: {
+    backgroundColor: '#e6f7ec',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    alignItems: 'center',
+    borderColor: '#a3e6b7',
+    borderRadius: 4,
+    padding: 10,
+    marginBottom: 10,
   },
-  previewLabel: {
-    fontSize: 12,
-    color: '#64748b',
-    marginBottom: 8,
-    alignSelf: 'flex-start',
-  },
-  previewImage: {
-    width: 150,
-    height: 150,
-    borderRadius: 8,
-    backgroundColor: '#ffffff',
-  },
-  imageUrlText: {
-    fontSize: 11,
-    color: '#94a3b8',
-    marginTop: 6,
+  successText: {
+    color: '#12873b',
+    fontSize: 13,
+    fontWeight: '700',
   },
   submitBtn: {
-    backgroundColor: '#059669',
-    paddingVertical: 14,
-    borderRadius: 10,
+    backgroundColor: '#ee4d2d', // Shopee Signature Orange
+    paddingVertical: 13,
+    borderRadius: 4,
     alignItems: 'center',
-    shadowColor: '#059669',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
+    marginTop: 10,
+    shadowColor: '#ee4d2d',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
     elevation: 3,
   },
   submitBtnDisabled: {
-    backgroundColor: '#9ca3af',
+    backgroundColor: '#f5a897',
   },
   submitBtnText: {
     color: '#ffffff',
@@ -535,4 +504,3 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 });
-

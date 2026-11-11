@@ -22,8 +22,7 @@ export default function DashboardScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [adminName, setAdminName] = useState('Admin');
-  const [exportMessage, setExportMessage] = useState<string | null>(null);
+  const [adminName, setAdminName] = useState('Người bán');
 
   const fetchDashboardData = async () => {
     try {
@@ -56,19 +55,6 @@ export default function DashboardScreen() {
     fetchDashboardData();
   }, []);
 
-  const handleExportJson = async () => {
-    try {
-      setExportMessage('Đang xử lý xuất dữ liệu...');
-      const res = await productService.exportJson();
-      if (res.success) {
-        setExportMessage('✅ Đã xuất dữ liệu ra file database/products.json thành công!');
-        setTimeout(() => setExportMessage(null), 4000);
-      }
-    } catch (err: any) {
-      setExportMessage('❌ Lỗi khi xuất file: ' + (err.response?.data?.message || err.message));
-    }
-  };
-
   // Tính toán các chỉ số thống kê
   const totalProducts = products.length;
   const totalQuantity = products.reduce((sum, p) => sum + (Number(p.soluong) || 0), 0);
@@ -81,7 +67,7 @@ export default function DashboardScreen() {
     : null;
 
   const formatVND = (num: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num);
+    return '₫' + new Intl.NumberFormat('vi-VN').format(num);
   };
 
   return (
@@ -92,128 +78,98 @@ export default function DashboardScreen() {
         style={styles.mainScroll}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchDashboardData(); }} />
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={() => { setRefreshing(true); fetchDashboardData(); }}
+            colors={['#ee4d2d']}
+          />
         }
       >
-        {/* Banner tiêu đề */}
+        {/* Banner tiêu đề Shopee Seller */}
         <View style={styles.headerBanner}>
           <View>
-            <Text style={styles.bannerTitle}>Bảng Điều Khiển Tổng Quan (Dashboard)</Text>
+            <Text style={styles.bannerTitle}>Hiệu Quả Hoạt Động Cửa Hàng</Text>
             <Text style={styles.bannerSubtitle}>
-              Theo dõi kho hàng, thống kê số lượng và tình trạng sản phẩm trong MongoDB
+              Tổng quan chỉ số kho hàng và kinh doanh
             </Text>
           </View>
 
-          <View style={styles.actionBtnRow}>
-            <TouchableOpacity style={styles.primaryBtn} onPress={() => router.push('/admin/products')}>
-              <Text style={styles.primaryBtnText}>📦 Quản lý sản phẩm</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.secondaryBtn} onPress={handleExportJson}>
-              <Text style={styles.secondaryBtnText}>💾 Xuất JSON nộp bài</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity 
+            style={styles.primaryBtn} 
+            onPress={() => router.push('/admin/products')}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.primaryBtnText}>📦 Quản lý sản phẩm</Text>
+          </TouchableOpacity>
         </View>
-
-        {/* Thông báo xuất file */}
-        {exportMessage && (
-          <View style={styles.messageBox}>
-            <Text style={styles.messageText}>{exportMessage}</Text>
-          </View>
-        )}
 
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#2563eb" />
-            <Text style={styles.loadingText}>Đang nạp dữ liệu từ MongoDB...</Text>
+            <ActivityIndicator size="large" color="#ee4d2d" />
+            <Text style={styles.loadingText}>Đang tải dữ liệu...</Text>
           </View>
         ) : (
           <>
-            {/* Hàng thẻ thống kê */}
+            {/* Hàng thẻ thống kê Shopee Style */}
             <View style={styles.statsRow}>
               <StatCard
-                title="Tổng số sản phẩm"
+                title="Sản phẩm đang bán"
                 value={totalProducts}
-                subtext="Sản phẩm đang lưu trữ"
-                accentColor="#3b82f6"
-                icon="📦"
+                subtext="Mặt hàng khả dụng"
+                accentColor="#ee4d2d"
+                icon="🛍️"
               />
               <StatCard
                 title="Tổng lượng tồn kho"
                 value={totalQuantity}
-                subtext="Tổng số lượng các mặt hàng"
-                accentColor="#10b981"
-                icon="📊"
+                subtext="Số lượng sản phẩm trong kho"
+                accentColor="#00bfa5"
+                icon="📦"
               />
               <StatCard
-                title="Tổng giá trị kho"
+                title="Tổng giá trị hàng"
                 value={formatVND(totalInventoryValue)}
-                subtext="Giá trị tồn kho tính theo đơn giá"
-                accentColor="#8b5cf6"
+                subtext="Quy mô giá trị kho"
+                accentColor="#ffaa00"
                 icon="💰"
               />
               <StatCard
-                title="Sản phẩm giá cao nhất"
+                title="Mặt hàng cao cấp"
                 value={maxPriceProduct ? maxPriceProduct.name : 'N/A'}
                 subtext={maxPriceProduct ? formatVND(maxPriceProduct.price) : ''}
-                accentColor="#f59e0b"
+                accentColor="#7c3aed"
                 icon="⭐"
               />
             </View>
 
-            {/* Bảng xem trước danh sách sản phẩm */}
+            {/* Bảng xem trước sản phẩm Shopee Seller */}
             <View style={styles.tableSection}>
               <View style={styles.sectionHeader}>
-                <View>
-                  <Text style={styles.sectionTitle}>Danh Sách Sản Phẩm Hiện Có</Text>
-                  <Text style={styles.sectionSubtitle}>Dữ liệu thực tế từ collection `products`</Text>
-                </View>
+                <Text style={styles.sectionTitle}>Sản Phẩm Trong Gian Hàng</Text>
                 <TouchableOpacity
                   style={styles.viewAllBtn}
                   onPress={() => router.push('/admin/products')}
                 >
-                  <Text style={styles.viewAllText}>Xem và quản lý toàn bộ →</Text>
+                  <Text style={styles.viewAllText}>Xem tất cả ({products.length}) →</Text>
                 </TouchableOpacity>
               </View>
 
               <View style={styles.table}>
-                {/* Header bảng */}
-                <View style={styles.tableHeader}>
-                  <Text style={[styles.th, { flex: 1 }]}>Hình ảnh</Text>
-                  <Text style={[styles.th, { flex: 3 }]}>Tên sản phẩm</Text>
-                  <Text style={[styles.th, { flex: 2 }]}>Đơn giá</Text>
-                  <Text style={[styles.th, { flex: 1.5 }]}>Số lượng</Text>
-                  <Text style={[styles.th, { flex: 2.5 }]}>Thành tiền</Text>
-                </View>
-
-                {/* Danh sách các dòng */}
-                {products.map((item, index) => (
-                  <View
-                    key={item._id}
-                    style={[styles.tableRow, index % 2 === 0 && styles.tableRowAlt]}
-                  >
-                    <View style={[styles.td, { flex: 1 }]}>
-                      <Image
-                        source={{ uri: item.image }}
-                        style={styles.thumbImage}
-                        resizeMode="cover"
-                      />
-                    </View>
-                    <View style={[styles.td, { flex: 3 }]}>
-                      <Text style={styles.productName}>{item.name}</Text>
-                      <Text style={styles.productId}>ID: {item._id}</Text>
-                    </View>
-                    <View style={[styles.td, { flex: 2 }]}>
-                      <Text style={styles.priceText}>{formatVND(item.price)}</Text>
-                    </View>
-                    <View style={[styles.td, { flex: 1.5 }]}>
-                      <View style={styles.quantityBadge}>
-                        <Text style={styles.quantityText}>{item.soluong}</Text>
-                      </View>
-                    </View>
-                    <View style={[styles.td, { flex: 2.5 }]}>
-                      <Text style={styles.totalItemPrice}>
-                        {formatVND(item.price * item.soluong)}
+                {products.map((item) => (
+                  <View key={item._id} style={styles.productRow}>
+                    <Image
+                      source={{ uri: item.image }}
+                      style={styles.thumbImage}
+                      resizeMode="cover"
+                    />
+                    <View style={styles.productInfo}>
+                      <Text style={styles.productName} numberOfLines={1}>
+                        {item.name}
                       </Text>
+                      <Text style={styles.stockLabel}>Số lượng còn: {item.soluong}</Text>
+                    </View>
+                    <View style={styles.priceContainer}>
+                      <Text style={styles.priceValue}>{formatVND(item.price)}</Text>
                     </View>
                   </View>
                 ))}
@@ -229,14 +185,15 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f5f5f5', // Shopee Gray
   },
   mainScroll: {
     flex: 1,
   },
   scrollContent: {
-    padding: 24,
-    maxWidth: 1280,
+    padding: 12,
+    paddingBottom: 40,
+    maxWidth: 1200,
     width: '100%',
     alignSelf: 'center',
   },
@@ -244,185 +201,115 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 14,
+    paddingVertical: 4,
     flexWrap: 'wrap',
-    gap: 16,
+    gap: 8,
   },
   bannerTitle: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: '800',
-    color: '#0f172a',
-    marginBottom: 4,
+    color: '#222222',
   },
   bannerSubtitle: {
-    fontSize: 13,
-    color: '#64748b',
-  },
-  actionBtnRow: {
-    flexDirection: 'row',
-    gap: 10,
-    flexWrap: 'wrap',
+    fontSize: 12,
+    color: '#757575',
+    marginTop: 2,
   },
   primaryBtn: {
-    backgroundColor: '#2563eb',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
+    backgroundColor: '#ee4d2d', // Shopee Orange
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 4,
   },
   primaryBtnText: {
     color: '#ffffff',
+    fontSize: 13,
     fontWeight: '700',
-    fontSize: 13,
-  },
-  secondaryBtn: {
-    backgroundColor: '#059669',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  secondaryBtnText: {
-    color: '#ffffff',
-    fontWeight: '700',
-    fontSize: 13,
-  },
-  messageBox: {
-    backgroundColor: '#ecfdf5',
-    borderWidth: 1,
-    borderColor: '#a7f3d0',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-  },
-  messageText: {
-    color: '#065f46',
-    fontWeight: '600',
-    fontSize: 13,
   },
   loadingContainer: {
-    padding: 48,
+    padding: 40,
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 12,
-    color: '#64748b',
-    fontSize: 14,
+    marginTop: 10,
+    fontSize: 13,
+    color: '#777',
   },
   statsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 16,
-    marginBottom: 28,
+    gap: 10,
+    marginBottom: 14,
   },
   tableSection: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    overflow: 'hidden',
+    borderRadius: 6,
+    padding: 14,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowRadius: 2,
+    elevation: 1,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    marginBottom: 12,
+    paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-    backgroundColor: '#ffffff',
+    borderBottomColor: '#f0f0f0',
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
-    color: '#0f172a',
-  },
-  sectionSubtitle: {
-    fontSize: 12,
-    color: '#64748b',
+    color: '#222',
   },
   viewAllBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    backgroundColor: '#eff6ff',
+    paddingVertical: 2,
   },
   viewAllText: {
-    color: '#2563eb',
+    fontSize: 12,
+    color: '#ee4d2d',
     fontWeight: '600',
-    fontSize: 13,
   },
   table: {
-    width: '100%',
+    gap: 8,
   },
-  tableHeader: {
+  productRow: {
     flexDirection: 'row',
-    backgroundColor: '#f1f5f9',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#cbd5e1',
-  },
-  th: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#475569',
-    textTransform: 'uppercase',
-  },
-  tableRow: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
     alignItems: 'center',
+    paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
-  tableRowAlt: {
-    backgroundColor: '#fafafa',
-  },
-  td: {
-    justifyContent: 'center',
+    borderBottomColor: '#fafafa',
+    gap: 12,
   },
   thumbImage: {
-    width: 44,
-    height: 44,
-    borderRadius: 6,
-    backgroundColor: '#f1f5f9',
+    width: 48,
+    height: 48,
+    borderRadius: 4,
+    backgroundColor: '#f5f5f5',
+  },
+  productInfo: {
+    flex: 1,
   },
   productName: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#1e293b',
-  },
-  productId: {
-    fontSize: 11,
-    color: '#94a3b8',
-    fontFamily: 'monospace',
-  },
-  priceText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  quantityBadge: {
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
-  },
-  quantityText: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#334155',
-  },
-  totalItemPrice: {
-    fontSize: 14,
     fontWeight: '600',
-    color: '#059669',
+    color: '#222',
+  },
+  stockLabel: {
+    fontSize: 11,
+    color: '#888',
+    marginTop: 2,
+  },
+  priceContainer: {
+    alignItems: 'flex-end',
+  },
+  priceValue: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#ee4d2d', // Shopee Orange Price
   },
 });
-

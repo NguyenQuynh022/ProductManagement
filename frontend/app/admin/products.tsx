@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   Image,
   RefreshControl,
-  Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Navbar } from '../../components/Navbar';
@@ -21,13 +21,15 @@ import { Product } from '../../types/product';
 
 export default function ProductsScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
   const [sortOption, setSortOption] = useState<string>('');
-  const [adminName, setAdminName] = useState('Admin');
+  const [adminName, setAdminName] = useState('Người bán');
 
   // Modals state
   const [formModalVisible, setFormModalVisible] = useState(false);
@@ -42,7 +44,7 @@ export default function ProductsScreen() {
 
   const showAlert = (text: string, type: 'success' | 'error' = 'success') => {
     setAlertMessage({ text, type });
-    setTimeout(() => setAlertMessage(null), 4000);
+    setTimeout(() => setAlertMessage(null), 3500);
   };
 
   const loadProducts = async (querySearch?: string, querySort?: string) => {
@@ -74,7 +76,7 @@ export default function ProductsScreen() {
         await authService.logout();
         router.replace('/login');
       } else {
-        showAlert('Lỗi khi tải danh sách sản phẩm: ' + (err.response?.data?.message || err.message), 'error');
+        showAlert('Lỗi: ' + (err.response?.data?.message || err.message), 'error');
       }
     } finally {
       setLoading(false);
@@ -108,10 +110,10 @@ export default function ProductsScreen() {
   const handleFormSuccess = (savedProduct: Product, isEdit: boolean) => {
     if (isEdit) {
       setProducts(prev => prev.map(p => (p._id === savedProduct._id ? savedProduct : p)));
-      showAlert(`Đã cập nhật sản phẩm "${savedProduct.name}" thành công!`);
+      showAlert(`Đã cập nhật "${savedProduct.name}"!`);
     } else {
       setProducts(prev => [savedProduct, ...prev]);
-      showAlert(`Đã thêm mới sản phẩm "${savedProduct.name}" thành công!`);
+      showAlert(`Đã thêm mới "${savedProduct.name}"!`);
     }
   };
 
@@ -128,30 +130,19 @@ export default function ProductsScreen() {
       const res = await productService.deleteProduct(productToDelete._id);
       if (res.success) {
         setProducts(prev => prev.filter(p => p._id !== productToDelete._id));
-        showAlert(`Đã xóa sản phẩm "${productToDelete.name}" thành công!`);
+        showAlert(`Đã xóa "${productToDelete.name}" thành công!`);
         setDeleteModalVisible(false);
         setProductToDelete(null);
       }
     } catch (err: any) {
-      showAlert('Lỗi khi xóa sản phẩm: ' + (err.response?.data?.message || err.message), 'error');
+      showAlert('Lỗi khi xóa: ' + (err.response?.data?.message || err.message), 'error');
     } finally {
       setDeleting(false);
     }
   };
 
-  const handleExportJson = async () => {
-    try {
-      const res = await productService.exportJson();
-      if (res.success) {
-        showAlert('Đã xuất dữ liệu ra file database/products.json thành công!');
-      }
-    } catch (err: any) {
-      showAlert('Lỗi khi xuất file JSON: ' + (err.response?.data?.message || err.message), 'error');
-    }
-  };
-
   const formatVND = (num: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num);
+    return '₫' + new Intl.NumberFormat('vi-VN').format(num);
   };
 
   return (
@@ -162,23 +153,25 @@ export default function ProductsScreen() {
         style={styles.mainScroll}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadProducts(); }} />
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={() => { setRefreshing(true); loadProducts(); }}
+            colors={['#ee4d2d']}
+          />
         }
       >
-        {/* Banner tiêu đề */}
+        {/* Header Shopee Seller style */}
         <View style={styles.titleBanner}>
           <View>
-            <Text style={styles.pageTitle}>Quản Lý Sản Phẩm (Product Management)</Text>
+            <Text style={styles.pageTitle}>Quản Lý Sản Phẩm</Text>
             <Text style={styles.pageSubtitle}>
-              Thêm, sửa, xóa, tìm kiếm và phân loại sản phẩm trong cơ sở dữ liệu MongoDB
+              {products.length} sản phẩm đang bán
             </Text>
           </View>
 
-          <View style={styles.topActionBtns}>
-            <TouchableOpacity style={styles.addBtn} onPress={handleOpenAddModal}>
-              <Text style={styles.addBtnText}>➕ Thêm sản phẩm mới</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity style={styles.addBtn} onPress={handleOpenAddModal} activeOpacity={0.85}>
+            <Text style={styles.addBtnText}>➕ Thêm sản phẩm</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Thông báo Alert */}
@@ -195,21 +188,20 @@ export default function ProductsScreen() {
                 alertMessage.type === 'success' ? styles.alertSuccessText : styles.alertErrorText,
               ]}
             >
-              {alertMessage.type === 'success' ? '✅ ' : '❌ '}
+              {alertMessage.type === 'success' ? '✓ ' : '✕ '}
               {alertMessage.text}
             </Text>
           </View>
         )}
 
-        {/* Thanh công cụ Tìm kiếm và Sắp xếp */}
-        <View style={styles.toolbar}>
-          {/* Ô tìm kiếm */}
-          <View style={styles.searchBox}>
+        {/* Thanh tìm kiếm Shopee style */}
+        <View style={styles.searchCard}>
+          <View style={styles.searchBar}>
             <Text style={styles.searchIcon}>🔍</Text>
             <TextInput
               style={styles.searchInput}
-              placeholder="Tìm kiếm sản phẩm theo tên (ví dụ: iPhone, Samsung)..."
-              placeholderTextColor="#94a3b8"
+              placeholder="Tìm tên sản phẩm..."
+              placeholderTextColor="#999"
               value={search}
               onChangeText={setSearch}
               onSubmitEditing={handleSearchSubmit}
@@ -220,19 +212,18 @@ export default function ProductsScreen() {
               </TouchableOpacity>
             )}
             <TouchableOpacity style={styles.searchBtn} onPress={handleSearchSubmit}>
-              <Text style={styles.searchBtnText}>Tìm kiếm</Text>
+              <Text style={styles.searchBtnText}>Tìm</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Bộ lọc sắp xếp */}
-          <View style={styles.sortFilterGroup}>
-            <Text style={styles.sortLabel}>Sắp xếp:</Text>
+          {/* Bộ lọc sắp xếp Shopee Chips */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sortFilterGroup}>
             {[
-              { label: 'Mặc định', value: '' },
-              { label: 'Giá ↑', value: 'price_asc' },
-              { label: 'Giá ↓', value: 'price_desc' },
-              { label: 'SL ↑', value: 'soluong_asc' },
-              { label: 'SL ↓', value: 'soluong_desc' },
+              { label: 'Phổ biến', value: '' },
+              { label: 'Giá thấp ↗', value: 'price_asc' },
+              { label: 'Giá cao ↘', value: 'price_desc' },
+              { label: 'Kho nhiều', value: 'soluong_desc' },
+              { label: 'Kho ít', value: 'soluong_asc' },
             ].map(item => (
               <TouchableOpacity
                 key={item.value}
@@ -249,89 +240,108 @@ export default function ProductsScreen() {
                 </Text>
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
         </View>
 
-        {/* Bảng dữ liệu sản phẩm */}
-        <View style={styles.tableCard}>
-          <View style={styles.tableCardHeader}>
-            <Text style={styles.tableCardTitle}>
-              Danh Sách Sản Phẩm ({products.length} sản phẩm)
+        {/* Nội dung danh sách sản phẩm */}
+        {loading ? (
+          <View style={styles.loadingBox}>
+            <ActivityIndicator size="large" color="#ee4d2d" />
+            <Text style={styles.loadingText}>Đang tải sản phẩm...</Text>
+          </View>
+        ) : products.length === 0 ? (
+          <View style={styles.emptyBox}>
+            <Text style={styles.emptyIcon}>🛍️</Text>
+            <Text style={styles.emptyTitle}>Chưa có sản phẩm nào</Text>
+            <Text style={styles.emptySub}>
+              Bấm "Thêm sản phẩm" để bắt đầu đăng bán.
             </Text>
           </View>
-
-          {loading ? (
-            <View style={styles.loadingBox}>
-              <ActivityIndicator size="large" color="#2563eb" />
-              <Text style={styles.loadingText}>Đang tải dữ liệu từ Backend...</Text>
-            </View>
-          ) : products.length === 0 ? (
-            <View style={styles.emptyBox}>
-              <Text style={styles.emptyIcon}>📦</Text>
-              <Text style={styles.emptyTitle}>Không tìm thấy sản phẩm nào</Text>
-              <Text style={styles.emptySub}>
-                Thử tìm với từ khóa khác hoặc bấm "Mặc định" để nạp lại toàn bộ danh sách.
-              </Text>
-            </View>
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ width: '100%' }}>
-              <View style={styles.tableWrapper}>
-                {/* Header bảng */}
-                <View style={styles.tableHeader}>
-                  <Text style={[styles.th, { width: 80 }]}>STT</Text>
-                  <Text style={[styles.th, { width: 100 }]}>Hình ảnh</Text>
-                  <Text style={[styles.th, { width: 280 }]}>Tên sản phẩm</Text>
-                  <Text style={[styles.th, { width: 160 }]}>Đơn giá</Text>
-                  <Text style={[styles.th, { width: 120 }]}>Số lượng</Text>
-                  <Text style={[styles.th, { width: 180 }]}>Thao tác</Text>
-                </View>
-
-                {/* Các dòng sản phẩm */}
-                {products.map((item, index) => (
-                  <View
-                    key={item._id}
-                    style={[styles.tableRow, index % 2 === 0 && styles.tableRowAlt]}
-                  >
-                    <Text style={[styles.td, styles.sttText, { width: 80 }]}>{index + 1}</Text>
-                    <View style={[styles.td, { width: 100 }]}>
-                      <Image
-                        source={{ uri: item.image }}
-                        style={styles.productImage}
-                        resizeMode="cover"
-                      />
-                    </View>
-                    <View style={[styles.td, { width: 280 }]}>
-                      <Text style={styles.productName}>{item.name}</Text>
-                      <Text style={styles.productId}>ID: {item._id}</Text>
-                    </View>
-                    <Text style={[styles.td, styles.priceText, { width: 160 }]}>
-                      {formatVND(item.price)}
-                    </Text>
-                    <View style={[styles.td, { width: 120 }]}>
-                      <View style={styles.stockBadge}>
-                        <Text style={styles.stockText}>{item.soluong}</Text>
-                      </View>
-                    </View>
-                    <View style={[styles.td, styles.actionCell, { width: 180 }]}>
-                      <TouchableOpacity
-                        style={styles.editBtn}
-                        onPress={() => handleOpenEditModal(item)}
-                      >
-                        <Text style={styles.editBtnText}>✏️ Sửa</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.deleteBtn}
-                        onPress={() => handleOpenDeleteModal(item)}
-                      >
-                        <Text style={styles.deleteBtnText}>🗑️ Xóa</Text>
-                      </TouchableOpacity>
+        ) : isMobile ? (
+          /* GIAO DIỆN MOBILE: Dạng Shopee Product Card Item */
+          <View style={styles.mobileListContainer}>
+            {products.map((item) => (
+              <View key={item._id} style={styles.mobileCard}>
+                <Image
+                  source={{ uri: item.image }}
+                  style={styles.mobileCardImage}
+                  resizeMode="cover"
+                />
+                <View style={styles.mobileCardContent}>
+                  <Text style={styles.mobileCardName} numberOfLines={2}>
+                    {item.name}
+                  </Text>
+                  
+                  <View style={styles.mobileCardPriceRow}>
+                    <Text style={styles.mobileCardPrice}>{formatVND(item.price)}</Text>
+                    <View style={styles.mobileStockBadge}>
+                      <Text style={styles.mobileStockText}>Kho: {item.soluong}</Text>
                     </View>
                   </View>
-                ))}
+
+                  <View style={styles.mobileCardActions}>
+                    <TouchableOpacity
+                      style={styles.mobileEditBtn}
+                      onPress={() => handleOpenEditModal(item)}
+                    >
+                      <Text style={styles.mobileEditBtnText}>✏️ Sửa</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.mobileDeleteBtn}
+                      onPress={() => handleOpenDeleteModal(item)}
+                    >
+                      <Text style={styles.mobileDeleteBtnText}>🗑️ Xóa</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
-            </ScrollView>
-          )}
-        </View>
+            ))}
+          </View>
+        ) : (
+          /* GIAO DIỆN DESKTOP: Bảng Shopee Seller Centre */
+          <View style={styles.tableCard}>
+            <View style={styles.tableHeader}>
+              <Text style={[styles.th, { width: 60 }]}>#</Text>
+              <Text style={[styles.th, { width: 80 }]}>Ảnh</Text>
+              <Text style={[styles.th, { flex: 2 }]}>Tên sản phẩm</Text>
+              <Text style={[styles.th, { flex: 1 }]}>Giá bán</Text>
+              <Text style={[styles.th, { width: 100 }]}>Kho hàng</Text>
+              <Text style={[styles.th, { width: 160, textAlign: 'center' }]}>Thao tác</Text>
+            </View>
+
+            {products.map((item, index) => (
+              <View key={item._id} style={[styles.tableRow, index % 2 === 1 && styles.tableRowAlt]}>
+                <Text style={[styles.td, { width: 60, color: '#888' }]}>{index + 1}</Text>
+                <View style={[styles.cell, { width: 80 }]}>
+                  <Image source={{ uri: item.image }} style={styles.productImage} resizeMode="cover" />
+                </View>
+                <View style={[styles.cell, { flex: 2 }]}>
+                  <Text style={styles.productName}>{item.name}</Text>
+                </View>
+                <Text style={[styles.td, styles.priceText, { flex: 1 }]}>
+                  {formatVND(item.price)}
+                </Text>
+                <View style={[styles.cell, { width: 100 }]}>
+                  <Text style={styles.stockText}>{item.soluong}</Text>
+                </View>
+                <View style={[styles.cell, styles.actionCell, { width: 160 }]}>
+                  <TouchableOpacity
+                    style={styles.editBtn}
+                    onPress={() => handleOpenEditModal(item)}
+                  >
+                    <Text style={styles.editBtnText}>Sửa</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.deleteBtn}
+                    onPress={() => handleOpenDeleteModal(item)}
+                  >
+                    <Text style={styles.deleteBtnText}>Xóa</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
       </ScrollView>
 
       {/* Modal Thêm / Sửa Sản phẩm */}
@@ -345,12 +355,9 @@ export default function ProductsScreen() {
       {/* Modal Xác nhận Xóa */}
       <DeleteConfirmModal
         visible={deleteModalVisible}
-        product={productToDelete}
+        productName={productToDelete?.name || ''}
         loading={deleting}
-        onCancel={() => {
-          setDeleteModalVisible(false);
-          setProductToDelete(null);
-        }}
+        onClose={() => { setDeleteModalVisible(false); setProductToDelete(null); }}
         onConfirm={handleConfirmDelete}
       />
     </View>
@@ -360,14 +367,15 @@ export default function ProductsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f5f5f5', // Shopee Gray Background
   },
   mainScroll: {
     flex: 1,
   },
   scrollContent: {
-    padding: 24,
-    maxWidth: 1280,
+    padding: 12,
+    paddingBottom: 40,
+    maxWidth: 1200,
     width: '100%',
     alignSelf: 'center',
   },
@@ -375,41 +383,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
-    flexWrap: 'wrap',
-    gap: 16,
+    marginBottom: 12,
+    paddingVertical: 4,
   },
   pageTitle: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: '800',
-    color: '#0f172a',
-    marginBottom: 4,
+    color: '#222222',
   },
   pageSubtitle: {
-    fontSize: 13,
-    color: '#64748b',
-  },
-  topActionBtns: {
-    flexDirection: 'row',
-    gap: 10,
-    flexWrap: 'wrap',
-  },
-  exportBtn: {
-    backgroundColor: '#059669',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  exportBtnText: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 12,
+    color: '#757575',
+    marginTop: 2,
   },
   addBtn: {
-    backgroundColor: '#2563eb',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
+    backgroundColor: '#ee4d2d', // Shopee Orange
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 4,
+    shadowColor: '#ee4d2d',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
   },
   addBtnText: {
     color: '#ffffff',
@@ -417,71 +413,71 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   alertBox: {
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    borderWidth: 1,
+    padding: 10,
+    borderRadius: 4,
+    marginBottom: 10,
   },
   alertSuccess: {
-    backgroundColor: '#ecfdf5',
-    borderColor: '#a7f3d0',
-  },
-  alertSuccessText: {
-    color: '#065f46',
-    fontWeight: '600',
-    fontSize: 13,
+    backgroundColor: '#e6f7ec',
+    borderWidth: 1,
+    borderColor: '#a3e6b7',
   },
   alertError: {
-    backgroundColor: '#fef2f2',
-    borderColor: '#fecaca',
-  },
-  alertErrorText: {
-    color: '#dc2626',
-    fontWeight: '600',
-    fontSize: 13,
+    backgroundColor: '#fff0f0',
+    borderWidth: 1,
+    borderColor: '#ffc2c2',
   },
   alertText: {
     fontSize: 13,
+    fontWeight: '600',
   },
-  toolbar: {
+  alertSuccessText: {
+    color: '#12873b',
+  },
+  alertErrorText: {
+    color: '#ee4d2d',
+  },
+  searchCard: {
     backgroundColor: '#ffffff',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    marginBottom: 20,
-    gap: 14,
+    padding: 10,
+    borderRadius: 6,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  searchBox: {
+  searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+    borderRadius: 4,
+    paddingHorizontal: 10,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    backgroundColor: '#f8fafc',
+    borderColor: '#e8e8e8',
   },
   searchIcon: {
-    fontSize: 16,
-    marginRight: 8,
+    fontSize: 14,
+    marginRight: 6,
   },
   searchInput: {
     flex: 1,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: '#0f172a',
+    paddingVertical: 8,
+    fontSize: 13,
+    color: '#222',
   },
   clearSearch: {
     fontSize: 14,
-    color: '#94a3b8',
-    paddingHorizontal: 8,
+    color: '#999',
+    paddingHorizontal: 6,
   },
   searchBtn: {
-    backgroundColor: '#3b82f6',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 6,
-    marginLeft: 8,
+    backgroundColor: '#ee4d2d',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 3,
+    marginLeft: 4,
   },
   searchBtnText: {
     color: '#ffffff',
@@ -490,189 +486,232 @@ const styles = StyleSheet.create({
   },
   sortFilterGroup: {
     flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
     gap: 8,
-  },
-  sortLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#64748b',
-    marginRight: 4,
+    marginTop: 10,
+    paddingBottom: 2,
   },
   sortChip: {
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: '#f1f5f9',
+    paddingVertical: 5,
+    borderRadius: 14,
+    backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: '#e0e0e0',
   },
   sortChipActive: {
-    backgroundColor: '#2563eb',
-    borderColor: '#2563eb',
+    borderColor: '#ee4d2d',
+    backgroundColor: '#fff5f3',
   },
   sortChipText: {
     fontSize: 12,
-    color: '#475569',
-    fontWeight: '600',
+    color: '#555555',
+    fontWeight: '500',
   },
   sortChipTextActive: {
-    color: '#ffffff',
-  },
-  tableCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  tableCardHeader: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-    backgroundColor: '#ffffff',
-  },
-  tableCardTitle: {
-    fontSize: 16,
+    color: '#ee4d2d',
     fontWeight: '700',
-    color: '#0f172a',
   },
   loadingBox: {
-    padding: 48,
+    padding: 40,
     alignItems: 'center',
   },
   loadingText: {
-    marginTop: 12,
-    color: '#64748b',
-    fontSize: 14,
+    marginTop: 10,
+    fontSize: 13,
+    color: '#777',
   },
   emptyBox: {
-    padding: 48,
+    backgroundColor: '#ffffff',
+    padding: 40,
     alignItems: 'center',
+    borderRadius: 6,
   },
   emptyIcon: {
     fontSize: 48,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   emptyTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#334155',
-    marginBottom: 6,
+    color: '#222',
   },
   emptySub: {
     fontSize: 13,
-    color: '#94a3b8',
-    textAlign: 'center',
+    color: '#888',
+    marginTop: 4,
   },
-  tableWrapper: {
-    minWidth: 920,
+  /* MOBILE CARD STYLES */
+  mobileListContainer: {
+    gap: 10,
+  },
+  mobileCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 6,
+    padding: 10,
+    flexDirection: 'row',
+    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  mobileCardImage: {
+    width: 84,
+    height: 84,
+    borderRadius: 4,
+    backgroundColor: '#f8f8f8',
+  },
+  mobileCardContent: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  mobileCardName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#222222',
+    lineHeight: 18,
+  },
+  mobileCardPriceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 4,
+  },
+  mobileCardPrice: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#ee4d2d', // Shopee Price
+  },
+  mobileStockBadge: {
+    backgroundColor: '#f5f5f5',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 3,
+  },
+  mobileStockText: {
+    fontSize: 11,
+    color: '#757575',
+    fontWeight: '500',
+  },
+  mobileCardActions: {
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'flex-end',
+  },
+  mobileEditBtn: {
+    borderWidth: 1,
+    borderColor: '#ee4d2d',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 3,
+  },
+  mobileEditBtnText: {
+    color: '#ee4d2d',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  mobileDeleteBtn: {
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 3,
+  },
+  mobileDeleteBtnText: {
+    color: '#757575',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  /* DESKTOP TABLE STYLES */
+  tableCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 6,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#fafafa',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#cbd5e1',
   },
   th: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
-    color: '#475569',
-    textTransform: 'uppercase',
+    color: '#666',
   },
   tableRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: '#f5f5f5',
   },
   tableRowAlt: {
     backgroundColor: '#fafafa',
   },
-  td: {
+  cell: {
     justifyContent: 'center',
   },
-  sttText: {
+  td: {
     fontSize: 13,
-    color: '#64748b',
-    fontWeight: '600',
+    color: '#333',
   },
   productImage: {
     width: 50,
     height: 50,
-    borderRadius: 8,
-    backgroundColor: '#f1f5f9',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderRadius: 4,
+    backgroundColor: '#f5f5f5',
   },
   productName: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#0f172a',
-    marginBottom: 2,
-  },
-  productId: {
-    fontSize: 11,
-    color: '#94a3b8',
-    fontFamily: 'monospace',
+    fontWeight: '600',
+    color: '#222',
   },
   priceText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#0f172a',
-  },
-  stockBadge: {
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 14,
-    alignSelf: 'flex-start',
+    color: '#ee4d2d',
   },
   stockText: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#334155',
+    color: '#444',
   },
   actionCell: {
     flexDirection: 'row',
     gap: 8,
+    justifyContent: 'center',
   },
   editBtn: {
-    backgroundColor: '#f0fdf4',
-    borderWidth: 1,
-    borderColor: '#bbf7d0',
+    backgroundColor: '#ee4d2d',
     paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 6,
+    paddingVertical: 5,
+    borderRadius: 3,
   },
   editBtnText: {
-    color: '#16a34a',
+    color: '#ffffff',
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   deleteBtn: {
-    backgroundColor: '#fef2f2',
-    borderWidth: 1,
-    borderColor: '#fecaca',
+    backgroundColor: '#f5f5f5',
     paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 6,
+    paddingVertical: 5,
+    borderRadius: 3,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
   deleteBtnText: {
-    color: '#dc2626',
+    color: '#666',
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '600',
   },
 });
-

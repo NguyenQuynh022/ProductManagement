@@ -1,34 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { authService } from '../services/authService';
 
 export default function IndexScreen() {
   const router = useRouter();
-  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const isAuth = await authService.isAuthenticated();
-        if (isAuth) {
-          router.replace('/admin/dashboard');
-        } else {
-          router.replace('/login');
-        }
-      } catch (err) {
-        router.replace('/login');
-      } finally {
-        setChecking(false);
-      }
-    };
-
-    checkAuth();
+    // Tự động điều hướng đến giao diện Shopee Storefront
+    router.replace('/mobile' as any);
   }, []);
 
   return (
     <View style={styles.center}>
-      <ActivityIndicator size="large" color="#2563eb" />
+      <ActivityIndicator size="large" color="#ee4d2d" />
     </View>
   );
 }
@@ -38,7 +22,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0f172a',
+    backgroundColor: '#ee4d2d',
   },
 });
-

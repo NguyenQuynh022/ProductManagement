@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { authService } from '../services/authService';
 
@@ -7,7 +7,7 @@ interface NavbarProps {
   username?: string;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ username = 'Admin' }) => {
+export const Navbar: React.FC<NavbarProps> = ({ username = 'Người bán' }) => {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -17,23 +17,27 @@ export const Navbar: React.FC<NavbarProps> = ({ username = 'Admin' }) => {
   };
 
   const navItems = [
-    { label: '📊 Tổng quan', path: '/admin/dashboard' },
-    { label: '📦 Quản lý sản phẩm', path: '/admin/products' },
-    { label: '📱 Giao diện Mobile', path: '/mobile' },
+    { label: '🛍️ Cửa hàng', path: '/mobile' },
+    { label: '📦 Quản lý SP', path: '/admin/products' },
+    { label: '📊 Doanh thu', path: '/admin/dashboard' },
   ];
 
   return (
     <View style={styles.container}>
-      {/* Brand logo & title */}
-      <View style={styles.brandContainer}>
+      {/* Brand logo & title - Shopee Orange Header */}
+      <TouchableOpacity 
+        style={styles.brandContainer} 
+        activeOpacity={0.85}
+        onPress={() => router.push('/mobile' as any)}
+      >
         <View style={styles.logoBadge}>
-          <Text style={styles.logoText}>PM</Text>
+          <Text style={styles.logoText}>S</Text>
         </View>
         <View>
-          <Text style={styles.brandTitle}>ProductManagement</Text>
-          <Text style={styles.brandSub}>Hệ Thống Quản Trị Phân Hệ Admin</Text>
+          <Text style={styles.brandTitle}>Shopee</Text>
+          <Text style={styles.brandSub}>Kênh Quản Lý</Text>
         </View>
-      </View>
+      </TouchableOpacity>
 
       {/* Navigation items */}
       <View style={styles.navLinks}>
@@ -56,11 +60,10 @@ export const Navbar: React.FC<NavbarProps> = ({ username = 'Admin' }) => {
       {/* User profile & Logout */}
       <View style={styles.userSection}>
         <View style={styles.userBadge}>
-          <View style={styles.statusDot} />
-          <Text style={styles.usernameText}>{username}</Text>
+          <Text style={styles.usernameText}>👤 {username}</Text>
         </View>
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Đăng xuất</Text>
+          <Text style={styles.logoutText}>Thoát</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -69,103 +72,98 @@ export const Navbar: React.FC<NavbarProps> = ({ username = 'Admin' }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#1e293b',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
+    backgroundColor: '#ee4d2d', // Shopee Signature Orange
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderBottomColor: '#334155',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 4,
+    gap: 8,
     flexWrap: 'wrap',
-    gap: 12,
   },
   brandContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
   },
   logoBadge: {
-    width: 42,
-    height: 42,
+    width: 34,
+    height: 34,
     borderRadius: 8,
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
   },
   logoText: {
-    color: '#ffffff',
-    fontWeight: '800',
-    fontSize: 18,
+    color: '#ee4d2d',
+    fontWeight: '900',
+    fontSize: 22,
+    marginTop: -2,
   },
   brandTitle: {
     color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontSize: 17,
+    fontWeight: '800',
+    letterSpacing: 0.3,
   },
   brandSub: {
-    color: '#94a3b8',
-    fontSize: 12,
+    color: '#ffe5df',
+    fontSize: 10,
+    fontWeight: '600',
   },
   navLinks: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 4,
   },
   navItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
   },
   navItemActive: {
-    backgroundColor: '#334155',
+    backgroundColor: '#ffffff',
   },
   navItemText: {
-    color: '#94a3b8',
-    fontSize: 14,
+    color: '#ffffff',
+    fontSize: 12,
     fontWeight: '600',
   },
   navItemTextActive: {
-    color: '#ffffff',
-    fontWeight: '700',
+    color: '#ee4d2d',
+    fontWeight: '800',
   },
   userSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 6,
   },
   userBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#0f172a',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#10b981',
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   usernameText: {
-    color: '#e2e8f0',
-    fontSize: 13,
+    color: '#ffffff',
+    fontSize: 11,
     fontWeight: '600',
   },
   logoutBtn: {
-    backgroundColor: '#ef4444',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 6,
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   logoutText: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '600',
+    color: '#ee4d2d',
+    fontSize: 11,
+    fontWeight: '700',
   },
 });
