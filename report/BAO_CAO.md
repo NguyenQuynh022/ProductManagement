@@ -328,9 +328,7 @@ Máy tính đã có sẵn AVD: `Medium_Phone_API_35`.
 ---
 
 ## 13. KẾT LUẬN
-Dự án đã hoàn thành trọn vẹn cả phân hệ Web Admin và Mobile Android kết nối chung cơ sở dữ liệu MongoDB, đáp ứng tuyệt đối toàn bộ yêu cầu của đề bài thi.
 
-**Điểm nổi bật của giao diện đã hoàn thiện:**
 - Navbar Web desktop đầy đủ: Logo cửa hàng tuỳ chỉnh, tabs điều hướng, nút Thêm sản phẩm, pill user Admin, nút Đăng xuất.
 - Màn hình Mobile: Header compact với logo + tiêu đề + nút hamburger ☰, không hiển thị chữ "Admin" hay phân hệ thừa.
 - Hồ sơ cửa hàng: Modal popup khi nhấn logo/tiêu đề, hiển thị thông tin cửa hàng, hỗ trợ upload & chọn logo preset.
