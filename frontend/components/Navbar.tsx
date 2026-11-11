@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { authService } from '../services/authService';
 
@@ -7,7 +7,7 @@ interface NavbarProps {
   username?: string;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ username = 'Người bán' }) => {
+export const Navbar: React.FC<NavbarProps> = ({ username = 'Quản lý' }) => {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -17,25 +17,25 @@ export const Navbar: React.FC<NavbarProps> = ({ username = 'Người bán' }) =>
   };
 
   const navItems = [
-    { label: '🛍️ Cửa hàng', path: '/mobile' },
-    { label: '📦 Quản lý SP', path: '/admin/products' },
-    { label: '📊 Doanh thu', path: '/admin/dashboard' },
+    { label: '🍃 Người mua', path: '/mobile' },
+    { label: '📦 Quản lý kho', path: '/admin/products' },
+    { label: '📊 Báo cáo', path: '/admin/dashboard' },
   ];
 
   return (
     <View style={styles.container}>
-      {/* Brand logo & title - Shopee Orange Header */}
+      {/* Brand logo & title - ResQ Forest Green Header */}
       <TouchableOpacity 
         style={styles.brandContainer} 
         activeOpacity={0.85}
-        onPress={() => router.push('/mobile' as any)}
+        onPress={() => router.push('/' as any)}
       >
         <View style={styles.logoBadge}>
-          <Text style={styles.logoText}>S</Text>
+          <Text style={styles.logoText}>🍃</Text>
         </View>
         <View>
-          <Text style={styles.brandTitle}>Shopee</Text>
-          <Text style={styles.brandSub}>Kênh Quản Lý</Text>
+          <Text style={styles.brandTitle}>ResQ</Text>
+          <Text style={styles.brandSub}>Store &amp; Inventory</Text>
         </View>
       </TouchableOpacity>
 
@@ -72,71 +72,68 @@ export const Navbar: React.FC<NavbarProps> = ({ username = 'Người bán' }) =>
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#ee4d2d', // Shopee Signature Orange
+    backgroundColor: '#1b4332', // ResQ Deep Forest Green
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.08,
     shadowRadius: 4,
-    elevation: 4,
+    elevation: 3,
     gap: 8,
     flexWrap: 'wrap',
   },
   brandContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   logoBadge: {
-    width: 34,
-    height: 34,
-    borderRadius: 8,
-    backgroundColor: '#ffffff',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#e7ede4',
     alignItems: 'center',
     justifyContent: 'center',
   },
   logoText: {
-    color: '#ee4d2d',
-    fontWeight: '900',
-    fontSize: 22,
-    marginTop: -2,
+    fontSize: 18,
   },
   brandTitle: {
     color: '#ffffff',
-    fontSize: 17,
-    fontWeight: '800',
-    letterSpacing: 0.3,
+    fontSize: 18,
+    fontWeight: '900',
+    letterSpacing: -0.5,
   },
   brandSub: {
-    color: '#ffe5df',
+    color: '#d1fae5',
     fontSize: 10,
     fontWeight: '600',
   },
   navLinks: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
   navItem: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   navItemActive: {
     backgroundColor: '#ffffff',
   },
   navItemText: {
-    color: '#ffffff',
+    color: '#e5e7eb',
     fontSize: 12,
     fontWeight: '600',
   },
   navItemTextActive: {
-    color: '#ee4d2d',
+    color: '#1b4332',
     fontWeight: '800',
   },
   userSection: {
@@ -145,10 +142,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   userBadge: {
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
   },
   usernameText: {
     color: '#ffffff',
@@ -157,13 +154,13 @@ const styles = StyleSheet.create({
   },
   logoutBtn: {
     backgroundColor: '#ffffff',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 14,
   },
   logoutText: {
-    color: '#ee4d2d',
+    color: '#1b4332',
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '800',
   },
 });

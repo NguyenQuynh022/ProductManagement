@@ -5,7 +5,6 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
-  TextInput,
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
@@ -18,28 +17,26 @@ import { productService } from '../../services/productService';
 import { Product } from '../../types/product';
 
 const { width } = Dimensions.get('window');
-const COLUMN_WIDTH = (Math.min(width, 600) - 24) / 2;
+const CARD_WIDTH = (Math.min(width, 600) - 40) / 2;
 
-export default function MobileHomeScreen() {
+export default function MobileProductCatalogScreen() {
   const router = useRouter();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [search, setSearch] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState('all');
 
-  const fetchProducts = async (keyword?: string) => {
+  const fetchProducts = async (sort?: string) => {
     try {
       setLoading(true);
-      setError(null);
-      const params = keyword && keyword.trim() ? { search: keyword.trim() } : undefined;
+      const params = sort ? { sort } : undefined;
       const res = await productService.getProducts(params);
       if (res.success) {
         setProducts(res.data);
       }
     } catch (err: any) {
-      setError('Không thể kết nối máy chủ. Vui lòng kiểm tra lại mạng.');
+      console.warn('Error fetching products:', err.message);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -50,165 +47,176 @@ export default function MobileHomeScreen() {
     fetchProducts();
   }, []);
 
-  const handleSearch = (text: string) => {
-    setSearch(text);
-    fetchProducts(text);
+  const handleFilterPress = (filterKey: string, sortVal?: string) => {
+    setActiveFilter(filterKey);
+    fetchProducts(sortVal);
   };
 
   const formatVND = (num: number) => {
-    return '₫' + new Intl.NumberFormat('vi-VN').format(num);
+    if (num === 0) return '0đ';
+    return new Intl.NumberFormat('vi-VN').format(num) + 'đ';
   };
 
-  const renderShopeeProduct = ({ item, index }: { item: Product; index: number }) => (
+  const renderProductCard = ({ item, index }: { item: Product; index: number }) => (
     <TouchableOpacity
       style={[
         styles.productCard,
-        { marginRight: index % 2 === 0 ? 8 : 0 },
+        { marginRight: index % 2 === 0 ? 12 : 0 },
       ]}
       activeOpacity={0.9}
       onPress={() => router.push(`/mobile/detail/${item._id}` as any)}
     >
-      {/* Ảnh sản phẩm */}
-      <View style={styles.imageContainer}>
+      {/* Khung ảnh có bo góc bên trong card */}
+      <View style={styles.cardImageWrapper}>
         <Image
           source={{ uri: item.image }}
-          style={styles.productImage}
+          style={styles.cardImage}
           resizeMode="cover"
         />
-        {/* Badge Shopee Yêu thích / Mall */}
-        <View style={styles.mallBadge}>
-          <Text style={styles.mallBadgeText}>Yêu thích</Text>
+        {/* Huy hiệu góc phải giống chữ FREE trên mẫu */}
+        <View style={styles.badgePill}>
+          <Text style={styles.badgeText}>CHÍNH HÃNG</Text>
         </View>
       </View>
 
-      {/* Thông tin sản phẩm */}
-      <View style={styles.cardInfo}>
-        <Text style={styles.productName} numberOfLines={2}>
-          {item.name}
-        </Text>
+      {/* Tên sản phẩm */}
+      <Text style={styles.productTitle} numberOfLines={1}>
+        {item.name}
+      </Text>
 
-        <View style={styles.tagRow}>
-          <Text style={styles.freeshipTag}>Freeship Xtra</Text>
-        </View>
+      {/* Thời gian / Số lượng tồn kho giống 'Pick up by 8:30 PM' */}
+      <Text style={styles.productMeta}>
+        Kho: {item.soluong} sản phẩm có sẵn
+      </Text>
 
-        <View style={styles.priceRow}>
-          <Text style={styles.productPrice}>{formatVND(item.price)}</Text>
-          <Text style={styles.stockText}>Kho: {item.soluong}</Text>
-        </View>
+      {/* Dòng dưới: Giá tiền bên trái & Nút Claim/Xem bên phải */}
+      <View style={styles.cardBottomRow}>
+        <Text style={styles.productPrice}>{formatVND(item.price)}</Text>
+        <TouchableOpacity
+          style={styles.claimButton}
+          activeOpacity={0.85}
+          onPress={() => router.push(`/mobile/detail/${item._id}` as any)}
+        >
+          <Text style={styles.claimButtonText}>Xem</Text>
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
-      {/* Header Shopee Orange */}
+      {/* Header chuẩn mẫu: Nút tròn Back < | Tiêu đề giữa | Nút tròn ... */}
       <View style={styles.header}>
-        <View style={styles.searchBar}>
-          <Text style={styles.searchIcon}>🔍</Text>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Shopee tìm kiếm..."
-            placeholderTextColor="#888"
-            value={search}
-            onChangeText={handleSearch}
-          />
-          {search.length > 0 && (
-            <TouchableOpacity onPress={() => handleSearch('')}>
-              <Text style={styles.clearSearch}>✕</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        <TouchableOpacity style={styles.circularBtn} onPress={() => router.push('/' as any)}>
+          <Text style={styles.circularBtnIcon}>‹</Text>
+        </TouchableOpacity>
 
-        {/* Nút Kênh Quản lý */}
-        <TouchableOpacity
-          style={styles.sellerBtn}
+        <Text style={styles.headerTitle}>Góc Sản Phẩm ResQ</Text>
+
+        <TouchableOpacity 
+          style={styles.circularBtn} 
           onPress={() => router.push('/admin/products' as any)}
         >
-          <Text style={styles.sellerBtnIcon}>🏪</Text>
-          <Text style={styles.sellerBtnText}>Quản lý</Text>
+          <Text style={styles.circularBtnIcon}>•••</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Thanh danh mục / khuyến mãi Shopee */}
-      <View style={styles.bannerStrip}>
-        <View style={styles.bannerItem}>
-          <Text style={styles.bannerIcon}>🚚</Text>
-          <Text style={styles.bannerText}>Freeship 0Đ</Text>
-        </View>
-        <View style={styles.bannerItem}>
-          <Text style={styles.bannerIcon}>⚡</Text>
-          <Text style={styles.bannerText}>Flash Sale</Text>
-        </View>
-        <View style={styles.bannerItem}>
-          <Text style={styles.bannerIcon}>🏷️</Text>
-          <Text style={styles.bannerText}>Shopee Mall</Text>
-        </View>
-        <TouchableOpacity 
-          style={styles.bannerItem}
-          onPress={() => router.push('/mobile/add' as any)}
-        >
-          <Text style={styles.bannerIcon}>➕</Text>
-          <Text style={[styles.bannerText, { color: '#ee4d2d', fontWeight: '700' }]}>Đăng bán</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Tiêu đề mục GỢI Ý HÔM NAY */}
-      <View style={styles.sectionHeader}>
-        <View style={styles.orangeLine} />
-        <Text style={styles.sectionTitle}>GỢI Ý HÔM NAY</Text>
-        <View style={styles.orangeLine} />
-      </View>
-
-      {/* Lưới 2 cột sản phẩm */}
-      {error ? (
-        <View style={styles.centerBox}>
-          <Text style={styles.errorText}>⚠️ {error}</Text>
-          <TouchableOpacity style={styles.retryBtn} onPress={() => fetchProducts()}>
-            <Text style={styles.retryBtnText}>Thử lại</Text>
-          </TouchableOpacity>
-        </View>
-      ) : loading && !refreshing ? (
-        <View style={styles.centerBox}>
-          <ActivityIndicator size="large" color="#ee4d2d" />
-          <Text style={styles.loadingText}>Đang nạp sản phẩm Shopee...</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={products}
-          numColumns={2}
-          keyExtractor={(item) => item._id}
-          renderItem={renderShopeeProduct}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => {
-                setRefreshing(true);
-                fetchProducts(search);
-              }}
-              colors={['#ee4d2d']}
-            />
-          }
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyIcon}>🛍️</Text>
-              <Text style={styles.emptyText}>Không tìm thấy sản phẩm nào</Text>
+      <FlatList
+        data={products}
+        numColumns={2}
+        keyExtractor={(item) => item._id}
+        renderItem={renderProductCard}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              setRefreshing(true);
+              fetchProducts();
+            }}
+            colors={['#1b4332']}
+          />
+        }
+        ListHeaderComponent={
+          <>
+            {/* Thẻ Hero Card trên cùng giống ảnh 2 (Community Sharing Maps) */}
+            <View style={styles.topHeroCard}>
+              <Image
+                source={{ uri: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&q=80' }}
+                style={styles.topHeroImage}
+                resizeMode="cover"
+              />
+              <View style={styles.topHeroContent}>
+                <Text style={styles.topHeroTag}>BỘ SƯU TẬP CHỌN LỌC</Text>
+                <Text style={styles.topHeroTitle}>Sản phẩm tốt, giá sẻ chia</Text>
+                <Text style={styles.topHeroDesc}>
+                  Khám phá các sản phẩm chất lượng cao được cập nhật và kiểm duyệt trực tiếp.
+                </Text>
+              </View>
             </View>
-          }
-        />
-      )}
 
-      {/* Nút nổi Đăng Bán Sản Phẩm (Shopee Seller FAB) */}
+            {/* Các nút lọc viên thuốc (Filter Pills) */}
+            <View style={styles.filterPillsRow}>
+              <TouchableOpacity
+                style={[styles.filterPill, activeFilter === 'all' && styles.filterPillActive]}
+                onPress={() => handleFilterPress('all')}
+              >
+                <Text style={[styles.filterPillText, activeFilter === 'all' && styles.filterPillTextActive]}>
+                  Tất cả
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.filterPill, activeFilter === 'price_asc' && styles.filterPillActive]}
+                onPress={() => handleFilterPress('price_asc', 'price_asc')}
+              >
+                <Text style={[styles.filterPillText, activeFilter === 'price_asc' && styles.filterPillTextActive]}>
+                  Giá tốt
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.filterPill, activeFilter === 'soluong_desc' && styles.filterPillActive]}
+                onPress={() => handleFilterPress('soluong_desc', 'soluong_desc')}
+              >
+                <Text style={[styles.filterPillText, activeFilter === 'soluong_desc' && styles.filterPillTextActive]}>
+                  Có sẵn ngay
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Tiêu đề phân mục: "Available near you" ... "4 offers" */}
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Sản phẩm dành cho bạn</Text>
+              <Text style={styles.sectionOfferCount}>{products.length} sản phẩm</Text>
+            </View>
+          </>
+        }
+        ListEmptyComponent={
+          loading ? (
+            <View style={styles.centerBox}>
+              <ActivityIndicator size="large" color="#1b4332" />
+              <Text style={styles.loadingText}>Đang tải danh sách sản phẩm...</Text>
+            </View>
+          ) : (
+            <View style={styles.centerBox}>
+              <Text style={styles.emptyTitle}>Chưa có sản phẩm nào</Text>
+            </View>
+          )
+        }
+      />
+
+      {/* Nút nổi thêm / tải ảnh sản phẩm lên hệ thống */}
       <TouchableOpacity
-        style={styles.fab}
+        style={styles.fabUploadBtn}
         activeOpacity={0.85}
         onPress={() => router.push('/mobile/add' as any)}
       >
-        <Text style={styles.fabIcon}>➕</Text>
-        <Text style={styles.fabText}>Thêm SP</Text>
+        <Text style={styles.fabUploadIcon}>📷</Text>
+        <Text style={styles.fabUploadText}>Tải ảnh lên</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -217,238 +225,246 @@ export default function MobileHomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f5f5', // Shopee Background
+    backgroundColor: '#ffffff',
   },
   header: {
-    backgroundColor: '#ee4d2d', // Shopee Orange
-    paddingHorizontal: 12,
-    paddingTop: 10,
-    paddingBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-  },
-  searchBar: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 4,
-    paddingHorizontal: 10,
-    height: 38,
-  },
-  searchIcon: {
-    fontSize: 14,
-    marginRight: 6,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 13,
-    color: '#222222',
-    paddingVertical: 4,
-  },
-  clearSearch: {
-    fontSize: 14,
-    color: '#999',
-    padding: 4,
-  },
-  sellerBtn: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  sellerBtnIcon: {
-    fontSize: 18,
-  },
-  sellerBtnText: {
-    color: '#ffffff',
-    fontSize: 10,
-    fontWeight: '700',
-    marginTop: 1,
-  },
-  bannerStrip: {
-    backgroundColor: '#ffffff',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  bannerItem: {
-    alignItems: 'center',
-  },
-  bannerIcon: {
-    fontSize: 20,
-    marginBottom: 2,
-  },
-  bannerText: {
-    fontSize: 11,
-    color: '#555',
-    fontWeight: '600',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 18,
     paddingVertical: 12,
-    gap: 8,
   },
-  orangeLine: {
-    width: 30,
-    height: 2,
-    backgroundColor: '#ee4d2d',
-  },
-  sectionTitle: {
-    color: '#ee4d2d',
-    fontSize: 13,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  listContent: {
-    paddingHorizontal: 8,
-    paddingBottom: 80,
-  },
-  productCard: {
-    width: COLUMN_WIDTH,
+  circularBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: '#e8ece6',
     backgroundColor: '#ffffff',
-    borderRadius: 4,
-    marginBottom: 8,
-    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
   },
-  imageContainer: {
-    width: '100%',
-    aspectRatio: 1,
-    position: 'relative',
-    backgroundColor: '#fafafa',
-  },
-  productImage: {
-    width: '100%',
-    height: '100%',
-  },
-  mallBadge: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    backgroundColor: '#ee4d2d',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderBottomRightRadius: 4,
-  },
-  mallBadgeText: {
-    color: '#ffffff',
-    fontSize: 9,
-    fontWeight: '800',
-  },
-  cardInfo: {
-    padding: 8,
-    justifyContent: 'space-between',
-    minHeight: 85,
-  },
-  productName: {
-    fontSize: 13,
-    color: '#222222',
-    lineHeight: 17,
-    fontWeight: '500',
-  },
-  tagRow: {
-    marginVertical: 4,
-  },
-  freeshipTag: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#eafbf3',
-    color: '#00bfa5',
-    fontSize: 9,
+  circularBtnIcon: {
+    fontSize: 22,
+    color: '#1b4332',
     fontWeight: '700',
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderRadius: 2,
-    borderWidth: 0.5,
-    borderColor: '#00bfa5',
+    marginTop: -2,
   },
-  priceRow: {
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#1b4332',
+  },
+  listContent: {
+    paddingHorizontal: 14,
+    paddingBottom: 90,
+    maxWidth: 620,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  topHeroCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: '#e8ece6',
+    padding: 14,
+    flexDirection: 'row',
+    gap: 14,
+    marginTop: 8,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 1,
+  },
+  topHeroImage: {
+    width: 110,
+    height: 110,
+    borderRadius: 16,
+    backgroundColor: '#eef2ea',
+  },
+  topHeroContent: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  topHeroTag: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#1b4332',
+    letterSpacing: 0.8,
+    marginBottom: 4,
+  },
+  topHeroTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#111827',
+    lineHeight: 22,
+    marginBottom: 4,
+  },
+  topHeroDesc: {
+    fontSize: 12,
+    color: '#6b7280',
+    lineHeight: 16,
+  },
+  filterPillsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 20,
+  },
+  filterPill: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 22,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  filterPillActive: {
+    backgroundColor: '#1b4332', // Dark Green Active Pill
+    borderColor: '#1b4332',
+  },
+  filterPillText: {
+    fontSize: 13,
+    color: '#374151',
+    fontWeight: '600',
+  },
+  filterPillTextActive: {
+    color: '#ffffff',
+    fontWeight: '700',
+  },
+  sectionHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'baseline',
-    marginTop: 4,
+    marginBottom: 14,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  sectionOfferCount: {
+    fontSize: 13,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  /* 2-Column Product Cards matching Image 2 */
+  productCard: {
+    width: CARD_WIDTH,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e8ece6',
+    padding: 10,
+    marginBottom: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  cardImageWrapper: {
+    width: '100%',
+    aspectRatio: 1.1,
+    borderRadius: 14,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: '#f6f8f5',
+    marginBottom: 10,
+  },
+  cardImage: {
+    width: '100%',
+    height: '100%',
+  },
+  badgePill: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#e6f4ea', // Light mint green badge
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  badgeText: {
+    color: '#1b4332',
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  productTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  productMeta: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginBottom: 12,
+  },
+  cardBottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   productPrice: {
     fontSize: 15,
     fontWeight: '800',
-    color: '#ee4d2d', // Shopee Red Orange Price
+    color: '#111827',
   },
-  stockText: {
-    fontSize: 10,
-    color: '#888888',
-  },
-  centerBox: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 30,
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 13,
-    color: '#777',
-  },
-  errorText: {
-    color: '#ee4d2d',
-    fontSize: 13,
-    marginBottom: 12,
-  },
-  retryBtn: {
-    backgroundColor: '#ee4d2d',
+  claimButton: {
+    backgroundColor: '#1b4332', // Deep green button
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 4,
+    paddingVertical: 7,
+    borderRadius: 18,
   },
-  retryBtnText: {
+  claimButtonText: {
     color: '#ffffff',
     fontSize: 12,
     fontWeight: '700',
   },
-  emptyContainer: {
-    padding: 60,
+  centerBox: {
+    padding: 40,
     alignItems: 'center',
   },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 8,
-  },
-  emptyText: {
+  loadingText: {
+    marginTop: 10,
+    color: '#6b7280',
     fontSize: 13,
-    color: '#777',
   },
-  fab: {
+  emptyTitle: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  fabUploadBtn: {
     position: 'absolute',
-    bottom: 20,
-    right: 16,
-    backgroundColor: '#ee4d2d',
-    borderRadius: 25,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    bottom: 24,
+    right: 20,
+    backgroundColor: '#1b4332',
+    borderRadius: 28,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    shadowColor: '#ee4d2d',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 6,
+    gap: 8,
+    shadowColor: '#1b4332',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
     elevation: 6,
   },
-  fabIcon: {
+  fabUploadIcon: {
+    fontSize: 16,
+  },
+  fabUploadText: {
     color: '#ffffff',
     fontSize: 14,
-    fontWeight: 'bold',
-  },
-  fabText: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '800',
   },
 });

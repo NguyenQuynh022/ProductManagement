@@ -48,30 +48,29 @@ export default function MobileProductDetailScreen() {
   }, [id]);
 
   const formatVND = (num: number) => {
-    return '₫' + new Intl.NumberFormat('vi-VN').format(num);
+    if (num === 0) return '0đ';
+    return new Intl.NumberFormat('vi-VN').format(num) + 'đ';
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
 
-      {/* Header Shopee */}
+      {/* Header với 2 nút tròn chuẩn ResQ */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <Text style={styles.backBtnText}>←</Text>
+        <TouchableOpacity style={styles.circularBtn} onPress={() => router.back()}>
+          <Text style={styles.circularBtnIcon}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>
-          {product ? product.name : 'Chi Tiết Sản Phẩm'}
-        </Text>
-        <TouchableOpacity style={styles.homeBtn} onPress={() => router.push('/mobile' as any)}>
-          <Text style={styles.homeBtnText}>🏠</Text>
+        <Text style={styles.headerTitle}>Chi Tiết Sản Phẩm</Text>
+        <TouchableOpacity style={styles.circularBtn} onPress={() => router.push('/mobile' as any)}>
+          <Text style={styles.circularBtnIcon}>🏠</Text>
         </TouchableOpacity>
       </View>
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color="#ee4d2d" />
-          <Text style={styles.loadingText}>Đang tải thông tin sản phẩm...</Text>
+          <ActivityIndicator size="large" color="#1b4332" />
+          <Text style={styles.loadingText}>Đang nạp chi tiết sản phẩm...</Text>
         </View>
       ) : error || !product ? (
         <View style={styles.center}>
@@ -83,110 +82,68 @@ export default function MobileProductDetailScreen() {
       ) : (
         <View style={styles.mainContainer}>
           <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            {/* Ảnh lớn Hero Image Shopee Style */}
-            <View style={styles.imageContainer}>
+            {/* Ảnh lớn bo góc đẹp */}
+            <View style={styles.imageCard}>
               <Image
                 source={{ uri: product.image }}
                 style={styles.heroImage}
-                resizeMode="contain"
+                resizeMode="cover"
               />
-              <View style={styles.mallBadge}>
-                <Text style={styles.mallBadgeText}>Shopee Mall</Text>
+              <View style={styles.badgePill}>
+                <Text style={styles.badgeText}>CHÍNH HÃNG</Text>
               </View>
             </View>
 
-            {/* Khối giá & tên sản phẩm */}
-            <View style={styles.sectionCard}>
-              <View style={styles.priceRow}>
+            {/* Khối thông tin chi tiết */}
+            <View style={styles.infoCard}>
+              <View style={styles.titlePriceRow}>
+                <Text style={styles.productTitle}>{product.name}</Text>
                 <Text style={styles.productPrice}>{formatVND(product.price)}</Text>
-                <View style={styles.cheapTag}>
-                  <Text style={styles.cheapTagText}>₫ Gì Cũng Rẻ</Text>
+              </View>
+
+              <View style={styles.badgeRow}>
+                <View style={styles.mintPill}>
+                  <Text style={styles.mintPillText}>Còn {product.soluong} sản phẩm</Text>
+                </View>
+                <View style={styles.mintPill}>
+                  <Text style={styles.mintPillText}>Chất lượng cao</Text>
                 </View>
               </View>
 
-              <Text style={styles.productName}>{product.name}</Text>
+              <View style={styles.divider} />
 
-              <View style={styles.metaRow}>
-                <Text style={styles.starText}>⭐⭐⭐⭐⭐ 5.0</Text>
-                <Text style={styles.dividerDot}>•</Text>
-                <Text style={styles.stockInfoText}>Kho: {product.soluong} sản phẩm</Text>
-                <Text style={styles.dividerDot}>•</Text>
-                <Text style={styles.soldText}>Chính hãng 100%</Text>
-              </View>
-            </View>
+              <Text style={styles.sectionHeading}>Mô tả &amp; Thông tin</Text>
+              <Text style={styles.descriptionText}>
+                Sản phẩm được bảo quản trong tình trạng hoàn hảo. Toàn bộ thông tin được cập nhật và đồng bộ trực tiếp từ hệ thống.
+              </Text>
 
-            {/* Dịch vụ & Ưu đãi Shopee */}
-            <View style={styles.sectionCard}>
-              <View style={styles.serviceRow}>
-                <Text style={styles.serviceIcon}>🚚</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.serviceTitle}>Miễn phí vận chuyển</Text>
-                  <Text style={styles.serviceSub}>Miễn phí vận chuyển cho đơn hàng từ 0Đ</Text>
+              <View style={styles.specsGrid}>
+                <View style={styles.specItem}>
+                  <Text style={styles.specLabel}>Tình trạng</Text>
+                  <Text style={styles.specValue}>Mới 100%</Text>
                 </View>
-              </View>
-
-              <View style={styles.serviceDivider} />
-
-              <View style={styles.serviceRow}>
-                <Text style={styles.serviceIcon}>🛡️</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.serviceTitle}>Shopee Đảm Bảo</Text>
-                  <Text style={styles.serviceSub}>Trả hàng miễn phí trong 15 ngày</Text>
+                <View style={styles.specItem}>
+                  <Text style={styles.specLabel}>Kho khả dụng</Text>
+                  <Text style={styles.specValue}>{product.soluong} chiếc</Text>
                 </View>
-              </View>
-            </View>
-
-            {/* Chi tiết sản phẩm */}
-            <View style={styles.sectionCard}>
-              <Text style={styles.cardHeading}>Chi Tiết Sản Phẩm</Text>
-              
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Danh Mục</Text>
-                <Text style={styles.specValue}>Shopee &gt; Thiết Bị Điện Tử</Text>
-              </View>
-              
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Số Lượng Tồn</Text>
-                <Text style={[styles.specValue, { color: '#ee4d2d', fontWeight: '700' }]}>
-                  {product.soluong} sản phẩm có sẵn
-                </Text>
-              </View>
-
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Tình Trạng</Text>
-                <Text style={styles.specValue}>Mới 100% nguyên seal</Text>
-              </View>
-
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Gửi Từ</Text>
-                <Text style={styles.specValue}>Hà Nội / TP. Hồ Chí Minh</Text>
               </View>
             </View>
           </ScrollView>
 
-          {/* Thanh tác vụ cố định bên dưới (Shopee Bottom Bar) */}
+          {/* Thanh cố định bên dưới với nút Claim / Hành động chuẩn ResQ */}
           <View style={styles.bottomBar}>
             <TouchableOpacity 
-              style={styles.chatBtn}
+              style={styles.manageBtn}
               onPress={() => router.push('/admin/products' as any)}
             >
-              <Text style={styles.bottomIcon}>🏪</Text>
-              <Text style={styles.bottomIconLabel}>Quản lý</Text>
+              <Text style={styles.manageBtnText}>🏪 Quản lý</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
-              style={styles.cartBtn}
+              style={styles.actionBtn}
               onPress={() => router.push('/mobile/add' as any)}
             >
-              <Text style={styles.bottomIcon}>➕</Text>
-              <Text style={styles.bottomIconLabel}>Thêm SP</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.buyBtn}
-              onPress={() => router.push('/mobile' as any)}
-            >
-              <Text style={styles.buyBtnText}>Xem Thêm Sản Phẩm</Text>
+              <Text style={styles.actionBtnText}>📷 Tải ảnh &amp; Thêm SP</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -198,221 +155,188 @@ export default function MobileProductDetailScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffff',
   },
   header: {
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingHorizontal: 18,
+    paddingVertical: 12,
   },
-  backBtn: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+  circularBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: '#e8ece6',
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  backBtnText: {
+  circularBtnIcon: {
     fontSize: 22,
+    color: '#1b4332',
     fontWeight: '700',
-    color: '#ee4d2d',
+    marginTop: -2,
   },
   headerTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#222222',
-    maxWidth: width - 100,
-  },
-  homeBtn: {
-    padding: 4,
-  },
-  homeBtnText: {
-    fontSize: 18,
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1b4332',
   },
   mainContainer: {
     flex: 1,
   },
   scrollContent: {
-    flex: 1,
-  },
-  imageContainer: {
-    backgroundColor: '#ffffff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 320,
+    paddingHorizontal: 18,
+    paddingBottom: 40,
+    maxWidth: 600,
     width: '100%',
+    alignSelf: 'center',
+  },
+  imageCard: {
+    width: '100%',
+    height: 300,
+    borderRadius: 24,
+    overflow: 'hidden',
     position: 'relative',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    backgroundColor: '#f6f8f5',
+    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: '#e8ece6',
   },
   heroImage: {
     width: '100%',
     height: '100%',
   },
-  mallBadge: {
+  badgePill: {
     position: 'absolute',
-    top: 12,
-    left: 12,
-    backgroundColor: '#ee4d2d',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 3,
+    top: 14,
+    right: 14,
+    backgroundColor: '#e6f4ea',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
-  mallBadgeText: {
-    color: '#ffffff',
+  badgeText: {
+    color: '#1b4332',
     fontSize: 10,
     fontWeight: '800',
+    letterSpacing: 0.5,
   },
-  sectionCard: {
+  infoCard: {
     backgroundColor: '#ffffff',
-    padding: 14,
-    marginBottom: 8,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#e8ece6',
+    padding: 20,
+    marginTop: 10,
   },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+  titlePriceRow: {
+    marginBottom: 12,
+  },
+  productTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#111827',
     marginBottom: 6,
   },
   productPrice: {
     fontSize: 22,
-    fontWeight: '800',
-    color: '#ee4d2d', // Shopee Signature Red Orange
+    fontWeight: '900',
+    color: '#1b4332', // Forest Green
   },
-  cheapTag: {
-    backgroundColor: '#ffefe9',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 3,
-    borderWidth: 0.5,
-    borderColor: '#ee4d2d',
+  badgeRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
   },
-  cheapTagText: {
-    color: '#ee4d2d',
-    fontSize: 10,
+  mintPill: {
+    backgroundColor: '#f1f6f1',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  mintPillText: {
+    color: '#1b4332',
+    fontSize: 12,
     fontWeight: '700',
   },
-  productName: {
+  divider: {
+    height: 1,
+    backgroundColor: '#eef2ea',
+    marginVertical: 14,
+  },
+  sectionHeading: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#222222',
-    lineHeight: 22,
+    fontWeight: '800',
+    color: '#111827',
     marginBottom: 8,
   },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  starText: {
-    fontSize: 12,
-    color: '#ffaa00',
-    fontWeight: '600',
-  },
-  dividerDot: {
-    color: '#ccc',
-    fontSize: 12,
-  },
-  stockInfoText: {
-    fontSize: 12,
-    color: '#555',
-  },
-  soldText: {
-    fontSize: 12,
-    color: '#00bfa5',
-    fontWeight: '600',
-  },
-  serviceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 4,
-  },
-  serviceIcon: {
-    fontSize: 18,
-  },
-  serviceTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#222',
-  },
-  serviceSub: {
-    fontSize: 11,
-    color: '#777',
-    marginTop: 1,
-  },
-  serviceDivider: {
-    height: 1,
-    backgroundColor: '#f5f5f5',
-    marginVertical: 8,
-  },
-  cardHeading: {
+  descriptionText: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#222',
-    marginBottom: 10,
-    textTransform: 'uppercase',
+    color: '#6b7280',
+    lineHeight: 20,
+    marginBottom: 16,
   },
-  specRow: {
+  specsGrid: {
     flexDirection: 'row',
-    paddingVertical: 6,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#f5f5f5',
+    gap: 12,
+  },
+  specItem: {
+    flex: 1,
+    backgroundColor: '#f8faf7',
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#e8ece6',
   },
   specLabel: {
-    width: 120,
-    fontSize: 12,
-    color: '#757575',
+    fontSize: 11,
+    color: '#6b7280',
+    fontWeight: '600',
+    marginBottom: 4,
   },
   specValue: {
-    flex: 1,
-    fontSize: 12,
-    color: '#222222',
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#111827',
   },
   bottomBar: {
     backgroundColor: '#ffffff',
-    flexDirection: 'row',
-    alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-    height: 52,
-  },
-  chatBtn: {
-    width: 70,
+    borderTopColor: '#e8ece6',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    gap: 12,
     alignItems: 'center',
-    justifyContent: 'center',
-    borderRightWidth: 1,
-    borderRightColor: '#f5f5f5',
   },
-  cartBtn: {
-    width: 70,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRightWidth: 1,
-    borderRightColor: '#f5f5f5',
+  manageBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#e8ece6',
+    backgroundColor: '#f8faf7',
   },
-  bottomIcon: {
-    fontSize: 16,
+  manageBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1b4332',
   },
-  bottomIconLabel: {
-    fontSize: 10,
-    color: '#555',
-    marginTop: 2,
-    fontWeight: '600',
-  },
-  buyBtn: {
+  actionBtn: {
     flex: 1,
-    backgroundColor: '#ee4d2d', // Shopee Orange Action
-    height: '100%',
+    backgroundColor: '#1b4332',
+    paddingVertical: 14,
+    borderRadius: 24,
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  buyBtnText: {
+  actionBtnText: {
     color: '#ffffff',
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   center: {
     flex: 1,
@@ -422,19 +346,19 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 10,
+    color: '#6b7280',
     fontSize: 13,
-    color: '#777',
   },
   errorText: {
+    color: '#b91c1c',
     fontSize: 14,
-    color: '#ee4d2d',
     marginBottom: 12,
   },
   backActionBtn: {
-    backgroundColor: '#ee4d2d',
+    backgroundColor: '#1b4332',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 4,
+    borderRadius: 20,
   },
   backActionText: {
     color: '#ffffff',

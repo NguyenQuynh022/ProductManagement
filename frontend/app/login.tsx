@@ -52,13 +52,13 @@ export default function LoginScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
-          {/* Header Shopee */}
+          {/* Header ResQ */}
           <View style={styles.header}>
             <View style={styles.logoBadge}>
-              <Text style={styles.logoText}>S</Text>
+              <Text style={styles.logoText}>🍃</Text>
             </View>
-            <Text style={styles.title}>Shopee</Text>
-            <Text style={styles.subtitle}>Kênh Người Bán &amp; Quản Lý</Text>
+            <Text style={styles.title}>ResQ Store</Text>
+            <Text style={styles.subtitle}>Đăng nhập phân hệ quản trị viên</Text>
           </View>
 
           {/* Error Message */}
@@ -76,8 +76,8 @@ export default function LoginScreen() {
                 style={styles.input}
                 value={username}
                 onChangeText={setUsername}
-                placeholder="Tên đăng nhập"
-                placeholderTextColor="#999"
+                placeholder="Nhập username"
+                placeholderTextColor="#9ca3af"
                 autoCapitalize="none"
               />
             </View>
@@ -88,13 +88,13 @@ export default function LoginScreen() {
                 style={styles.input}
                 value={password}
                 onChangeText={setPassword}
-                placeholder="Mật khẩu"
-                placeholderTextColor="#999"
+                placeholder="Nhập password"
+                placeholderTextColor="#9ca3af"
                 secureTextEntry
               />
             </View>
 
-            {/* Login Button Shopee Orange */}
+            {/* Login Button */}
             <TouchableOpacity
               style={[styles.loginBtn, loading && styles.loginBtnDisabled]}
               onPress={handleLogin}
@@ -104,16 +104,16 @@ export default function LoginScreen() {
               {loading ? (
                 <ActivityIndicator size="small" color="#ffffff" />
               ) : (
-                <Text style={styles.loginBtnText}>ĐĂNG NHẬP</Text>
+                <Text style={styles.loginBtnText}>ĐĂNG NHẬP QUẢN TRỊ</Text>
               )}
             </TouchableOpacity>
 
-            {/* Quick access to Storefront */}
+            {/* Quay lại trang chọn vai trò */}
             <TouchableOpacity
               style={styles.storefrontBtn}
-              onPress={() => router.push('/mobile' as any)}
+              onPress={() => router.push('/' as any)}
             >
-              <Text style={styles.storefrontText}>🛍️ Đến trang mua sắm Shopee</Text>
+              <Text style={styles.storefrontText}>← Quay lại màn hình chọn vai trò</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -125,125 +125,119 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ee4d2d', // Shopee Signature Orange
+    backgroundColor: '#f6f8f5', // Soft Sage Cream
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 24,
   },
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: 8,
-    padding: 28,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#e8ece6',
+    padding: 30,
     width: '100%',
-    maxWidth: 400,
-    shadowColor: '#000',
+    maxWidth: 420,
+    shadowColor: '#1b4332',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    elevation: 4,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 22,
   },
   logoBadge: {
-    width: 50,
-    height: 50,
-    borderRadius: 12,
-    backgroundColor: '#ee4d2d',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#e7ede4',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
-    shadowColor: '#ee4d2d',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
+    marginBottom: 12,
   },
   logoText: {
-    fontSize: 30,
-    fontWeight: '900',
-    color: '#ffffff',
-    marginTop: -2,
+    fontSize: 26,
   },
   title: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#ee4d2d',
-    letterSpacing: 0.5,
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#1b4332',
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 12,
-    color: '#777',
-    marginTop: 2,
+    fontSize: 13,
+    color: '#6b7280',
+    marginTop: 4,
   },
   errorBox: {
-    backgroundColor: '#fff0f0',
+    backgroundColor: '#fef2f2',
     borderWidth: 1,
-    borderColor: '#ffc2c2',
-    borderRadius: 4,
-    padding: 10,
-    marginBottom: 14,
+    borderColor: '#fecaca',
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 16,
   },
   errorText: {
-    color: '#ee4d2d',
-    fontSize: 12,
+    color: '#dc2626',
+    fontSize: 13,
     fontWeight: '600',
   },
   form: {
     width: '100%',
   },
   inputGroup: {
-    marginBottom: 14,
+    marginBottom: 16,
   },
   label: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#374151',
     marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 13,
-    color: '#222',
-    backgroundColor: '#fafafa',
+    borderColor: '#e5e7eb',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    fontSize: 14,
+    color: '#111827',
+    backgroundColor: '#ffffff',
   },
   loginBtn: {
-    backgroundColor: '#ee4d2d', // Shopee Orange
-    paddingVertical: 12,
-    borderRadius: 4,
+    backgroundColor: '#1b4332', // Deep Forest Green
+    paddingVertical: 14,
+    borderRadius: 22,
     alignItems: 'center',
-    marginTop: 6,
-    shadowColor: '#ee4d2d',
-    shadowOffset: { width: 0, height: 2 },
+    marginTop: 8,
+    shadowColor: '#1b4332',
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: 6,
     elevation: 2,
   },
   loginBtnDisabled: {
-    backgroundColor: '#f5a897',
+    backgroundColor: '#9ca3af',
   },
   loginBtnText: {
     color: '#ffffff',
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
     letterSpacing: 0.5,
   },
   storefrontBtn: {
-    marginTop: 14,
+    marginTop: 16,
     alignItems: 'center',
     paddingVertical: 6,
   },
   storefrontText: {
-    fontSize: 12,
-    color: '#ee4d2d',
-    fontWeight: '600',
+    fontSize: 13,
+    color: '#1b4332',
+    fontWeight: '700',
   },
 });

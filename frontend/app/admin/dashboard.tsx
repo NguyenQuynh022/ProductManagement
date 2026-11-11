@@ -22,7 +22,7 @@ export default function DashboardScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [adminName, setAdminName] = useState('Người bán');
+  const [adminName, setAdminName] = useState('Quản lý');
 
   const fetchDashboardData = async () => {
     try {
@@ -55,7 +55,6 @@ export default function DashboardScreen() {
     fetchDashboardData();
   }, []);
 
-  // Tính toán các chỉ số thống kê
   const totalProducts = products.length;
   const totalQuantity = products.reduce((sum, p) => sum + (Number(p.soluong) || 0), 0);
   const totalInventoryValue = products.reduce(
@@ -67,7 +66,8 @@ export default function DashboardScreen() {
     : null;
 
   const formatVND = (num: number) => {
-    return '₫' + new Intl.NumberFormat('vi-VN').format(num);
+    if (num === 0) return '0đ';
+    return new Intl.NumberFormat('vi-VN').format(num) + 'đ';
   };
 
   return (
@@ -81,16 +81,16 @@ export default function DashboardScreen() {
           <RefreshControl 
             refreshing={refreshing} 
             onRefresh={() => { setRefreshing(true); fetchDashboardData(); }}
-            colors={['#ee4d2d']}
+            colors={['#1b4332']}
           />
         }
       >
-        {/* Banner tiêu đề Shopee Seller */}
+        {/* Banner tiêu đề ResQ */}
         <View style={styles.headerBanner}>
           <View>
-            <Text style={styles.bannerTitle}>Hiệu Quả Hoạt Động Cửa Hàng</Text>
+            <Text style={styles.bannerTitle}>Báo Cáo Hoạt Động Kho Hàng</Text>
             <Text style={styles.bannerSubtitle}>
-              Tổng quan chỉ số kho hàng và kinh doanh
+              Tổng quan chỉ số tồn kho và giá trị sản phẩm
             </Text>
           </View>
 
@@ -99,53 +99,53 @@ export default function DashboardScreen() {
             onPress={() => router.push('/admin/products')}
             activeOpacity={0.85}
           >
-            <Text style={styles.primaryBtnText}>📦 Quản lý sản phẩm</Text>
+            <Text style={styles.primaryBtnText}>📦 Quản lý kho</Text>
           </TouchableOpacity>
         </View>
 
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#ee4d2d" />
+            <ActivityIndicator size="large" color="#1b4332" />
             <Text style={styles.loadingText}>Đang tải dữ liệu...</Text>
           </View>
         ) : (
           <>
-            {/* Hàng thẻ thống kê Shopee Style */}
+            {/* Hàng thẻ thống kê */}
             <View style={styles.statsRow}>
               <StatCard
-                title="Sản phẩm đang bán"
+                title="Sản phẩm đang lưu trữ"
                 value={totalProducts}
                 subtext="Mặt hàng khả dụng"
-                accentColor="#ee4d2d"
-                icon="🛍️"
+                accentColor="#1b4332"
+                icon="📦"
               />
               <StatCard
                 title="Tổng lượng tồn kho"
                 value={totalQuantity}
                 subtext="Số lượng sản phẩm trong kho"
-                accentColor="#00bfa5"
-                icon="📦"
+                accentColor="#166534"
+                icon="📊"
               />
               <StatCard
                 title="Tổng giá trị hàng"
                 value={formatVND(totalInventoryValue)}
                 subtext="Quy mô giá trị kho"
-                accentColor="#ffaa00"
+                accentColor="#15803d"
                 icon="💰"
               />
               <StatCard
                 title="Mặt hàng cao cấp"
                 value={maxPriceProduct ? maxPriceProduct.name : 'N/A'}
                 subtext={maxPriceProduct ? formatVND(maxPriceProduct.price) : ''}
-                accentColor="#7c3aed"
+                accentColor="#1e3a8a"
                 icon="⭐"
               />
             </View>
 
-            {/* Bảng xem trước sản phẩm Shopee Seller */}
+            {/* Bảng xem trước sản phẩm */}
             <View style={styles.tableSection}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Sản Phẩm Trong Gian Hàng</Text>
+                <Text style={styles.sectionTitle}>Sản Phẩm Trong Kho</Text>
                 <TouchableOpacity
                   style={styles.viewAllBtn}
                   onPress={() => router.push('/admin/products')}
@@ -166,7 +166,7 @@ export default function DashboardScreen() {
                       <Text style={styles.productName} numberOfLines={1}>
                         {item.name}
                       </Text>
-                      <Text style={styles.stockLabel}>Số lượng còn: {item.soluong}</Text>
+                      <Text style={styles.stockLabel}>Số lượng tồn: {item.soluong}</Text>
                     </View>
                     <View style={styles.priceContainer}>
                       <Text style={styles.priceValue}>{formatVND(item.price)}</Text>
@@ -185,15 +185,15 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5', // Shopee Gray
+    backgroundColor: '#ffffff',
   },
   mainScroll: {
     flex: 1,
   },
   scrollContent: {
-    padding: 12,
+    padding: 16,
     paddingBottom: 40,
-    maxWidth: 1200,
+    maxWidth: 1100,
     width: '100%',
     alignSelf: 'center',
   },
@@ -201,26 +201,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 14,
-    paddingVertical: 4,
+    marginBottom: 16,
     flexWrap: 'wrap',
     gap: 8,
   },
   bannerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#222222',
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#1b4332',
   },
   bannerSubtitle: {
-    fontSize: 12,
-    color: '#757575',
+    fontSize: 13,
+    color: '#6b7280',
     marginTop: 2,
   },
   primaryBtn: {
-    backgroundColor: '#ee4d2d', // Shopee Orange
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 4,
+    backgroundColor: '#1b4332',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
   },
   primaryBtnText: {
     color: '#ffffff',
@@ -234,45 +233,42 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     fontSize: 13,
-    color: '#777',
+    color: '#6b7280',
   },
   statsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 14,
+    gap: 12,
+    marginBottom: 16,
   },
   tableSection: {
     backgroundColor: '#ffffff',
-    borderRadius: 6,
-    padding: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e8ece6',
+    padding: 16,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
-    paddingBottom: 8,
+    marginBottom: 14,
+    paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: '#f3f4f6',
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#222',
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#111827',
   },
   viewAllBtn: {
     paddingVertical: 2,
   },
   viewAllText: {
-    fontSize: 12,
-    color: '#ee4d2d',
-    fontWeight: '600',
+    fontSize: 13,
+    color: '#1b4332',
+    fontWeight: '700',
   },
   table: {
     gap: 8,
@@ -280,36 +276,36 @@ const styles = StyleSheet.create({
   productRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#fafafa',
-    gap: 12,
+    borderBottomColor: '#f9fafb',
+    gap: 14,
   },
   thumbImage: {
     width: 48,
     height: 48,
-    borderRadius: 4,
-    backgroundColor: '#f5f5f5',
+    borderRadius: 12,
+    backgroundColor: '#f8faf7',
   },
   productInfo: {
     flex: 1,
   },
   productName: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#222',
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#111827',
   },
   stockLabel: {
-    fontSize: 11,
-    color: '#888',
+    fontSize: 12,
+    color: '#6b7280',
     marginTop: 2,
   },
   priceContainer: {
     alignItems: 'flex-end',
   },
   priceValue: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#ee4d2d', // Shopee Orange Price
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#1b4332',
   },
 });

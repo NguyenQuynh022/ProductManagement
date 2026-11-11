@@ -29,7 +29,7 @@ export default function ProductsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
   const [sortOption, setSortOption] = useState<string>('');
-  const [adminName, setAdminName] = useState('Người bán');
+  const [adminName, setAdminName] = useState('Quản lý');
 
   // Modals state
   const [formModalVisible, setFormModalVisible] = useState(false);
@@ -142,7 +142,8 @@ export default function ProductsScreen() {
   };
 
   const formatVND = (num: number) => {
-    return '₫' + new Intl.NumberFormat('vi-VN').format(num);
+    if (num === 0) return '0đ';
+    return new Intl.NumberFormat('vi-VN').format(num) + 'đ';
   };
 
   return (
@@ -156,16 +157,16 @@ export default function ProductsScreen() {
           <RefreshControl 
             refreshing={refreshing} 
             onRefresh={() => { setRefreshing(true); loadProducts(); }}
-            colors={['#ee4d2d']}
+            colors={['#1b4332']}
           />
         }
       >
-        {/* Header Shopee Seller style */}
+        {/* Header ResQ Store style */}
         <View style={styles.titleBanner}>
           <View>
-            <Text style={styles.pageTitle}>Quản Lý Sản Phẩm</Text>
+            <Text style={styles.pageTitle}>Quản Lý Kho Hàng</Text>
             <Text style={styles.pageSubtitle}>
-              {products.length} sản phẩm đang bán
+              {products.length} sản phẩm đang lưu trữ
             </Text>
           </View>
 
@@ -194,14 +195,14 @@ export default function ProductsScreen() {
           </View>
         )}
 
-        {/* Thanh tìm kiếm Shopee style */}
+        {/* Thanh tìm kiếm & bộ lọc */}
         <View style={styles.searchCard}>
           <View style={styles.searchBar}>
             <Text style={styles.searchIcon}>🔍</Text>
             <TextInput
               style={styles.searchInput}
               placeholder="Tìm tên sản phẩm..."
-              placeholderTextColor="#999"
+              placeholderTextColor="#9ca3af"
               value={search}
               onChangeText={setSearch}
               onSubmitEditing={handleSearchSubmit}
@@ -216,10 +217,10 @@ export default function ProductsScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Bộ lọc sắp xếp Shopee Chips */}
+          {/* Bộ lọc viên thuốc */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sortFilterGroup}>
             {[
-              { label: 'Phổ biến', value: '' },
+              { label: 'Tất cả', value: '' },
               { label: 'Giá thấp ↗', value: 'price_asc' },
               { label: 'Giá cao ↘', value: 'price_desc' },
               { label: 'Kho nhiều', value: 'soluong_desc' },
@@ -246,19 +247,19 @@ export default function ProductsScreen() {
         {/* Nội dung danh sách sản phẩm */}
         {loading ? (
           <View style={styles.loadingBox}>
-            <ActivityIndicator size="large" color="#ee4d2d" />
+            <ActivityIndicator size="large" color="#1b4332" />
             <Text style={styles.loadingText}>Đang tải sản phẩm...</Text>
           </View>
         ) : products.length === 0 ? (
           <View style={styles.emptyBox}>
-            <Text style={styles.emptyIcon}>🛍️</Text>
+            <Text style={styles.emptyIcon}>📦</Text>
             <Text style={styles.emptyTitle}>Chưa có sản phẩm nào</Text>
             <Text style={styles.emptySub}>
-              Bấm "Thêm sản phẩm" để bắt đầu đăng bán.
+              Bấm "Thêm sản phẩm" để bắt đầu đăng sản phẩm lên kho.
             </Text>
           </View>
         ) : isMobile ? (
-          /* GIAO DIỆN MOBILE: Dạng Shopee Product Card Item */
+          /* GIAO DIỆN MOBILE: Card ResQ Style */
           <View style={styles.mobileListContainer}>
             {products.map((item) => (
               <View key={item._id} style={styles.mobileCard}>
@@ -298,13 +299,13 @@ export default function ProductsScreen() {
             ))}
           </View>
         ) : (
-          /* GIAO DIỆN DESKTOP: Bảng Shopee Seller Centre */
+          /* GIAO DIỆN DESKTOP: Bảng ResQ Store */
           <View style={styles.tableCard}>
             <View style={styles.tableHeader}>
               <Text style={[styles.th, { width: 60 }]}>#</Text>
               <Text style={[styles.th, { width: 80 }]}>Ảnh</Text>
               <Text style={[styles.th, { flex: 2 }]}>Tên sản phẩm</Text>
-              <Text style={[styles.th, { flex: 1 }]}>Giá bán</Text>
+              <Text style={[styles.th, { flex: 1 }]}>Đơn giá</Text>
               <Text style={[styles.th, { width: 100 }]}>Kho hàng</Text>
               <Text style={[styles.th, { width: 160, textAlign: 'center' }]}>Thao tác</Text>
             </View>
@@ -367,15 +368,15 @@ export default function ProductsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5', // Shopee Gray Background
+    backgroundColor: '#ffffff',
   },
   mainScroll: {
     flex: 1,
   },
   scrollContent: {
-    padding: 12,
+    padding: 16,
     paddingBottom: 40,
-    maxWidth: 1200,
+    maxWidth: 1100,
     width: '100%',
     alignSelf: 'center',
   },
@@ -383,28 +384,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
-    paddingVertical: 4,
+    marginBottom: 16,
   },
   pageTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#222222',
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#1b4332',
   },
   pageSubtitle: {
-    fontSize: 12,
-    color: '#757575',
+    fontSize: 13,
+    color: '#6b7280',
     marginTop: 2,
   },
   addBtn: {
-    backgroundColor: '#ee4d2d', // Shopee Orange
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 4,
-    shadowColor: '#ee4d2d',
-    shadowOffset: { width: 0, height: 2 },
+    backgroundColor: '#1b4332', // Deep Green
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    shadowColor: '#1b4332',
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: 5,
     elevation: 3,
   },
   addBtnText: {
@@ -413,49 +413,46 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   alertBox: {
-    padding: 10,
-    borderRadius: 4,
-    marginBottom: 10,
+    padding: 12,
+    borderRadius: 14,
+    marginBottom: 12,
   },
   alertSuccess: {
-    backgroundColor: '#e6f7ec',
+    backgroundColor: '#f0fdf4',
     borderWidth: 1,
-    borderColor: '#a3e6b7',
+    borderColor: '#bbf7d0',
   },
   alertError: {
-    backgroundColor: '#fff0f0',
+    backgroundColor: '#fef2f2',
     borderWidth: 1,
-    borderColor: '#ffc2c2',
+    borderColor: '#fecaca',
   },
   alertText: {
     fontSize: 13,
     fontWeight: '600',
   },
   alertSuccessText: {
-    color: '#12873b',
+    color: '#15803d',
   },
   alertErrorText: {
-    color: '#ee4d2d',
+    color: '#dc2626',
   },
   searchCard: {
     backgroundColor: '#ffffff',
-    padding: 10,
-    borderRadius: 6,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    padding: 12,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#e8ece6',
+    marginBottom: 16,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 4,
-    paddingHorizontal: 10,
+    backgroundColor: '#f8faf7',
+    borderRadius: 14,
+    paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: '#e8e8e8',
+    borderColor: '#e5e7eb',
   },
   searchIcon: {
     fontSize: 14,
@@ -463,21 +460,21 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 10,
     fontSize: 13,
-    color: '#222',
+    color: '#111827',
   },
   clearSearch: {
     fontSize: 14,
-    color: '#999',
+    color: '#9ca3af',
     paddingHorizontal: 6,
   },
   searchBtn: {
-    backgroundColor: '#ee4d2d',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 3,
-    marginLeft: 4,
+    backgroundColor: '#1b4332',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 10,
+    marginLeft: 6,
   },
   searchBtnText: {
     color: '#ffffff',
@@ -488,27 +485,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     marginTop: 10,
-    paddingBottom: 2,
   },
   sortChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 16,
     backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: '#e5e7eb',
   },
   sortChipActive: {
-    borderColor: '#ee4d2d',
-    backgroundColor: '#fff5f3',
+    borderColor: '#1b4332',
+    backgroundColor: '#1b4332',
   },
   sortChipText: {
     fontSize: 12,
-    color: '#555555',
-    fontWeight: '500',
+    color: '#4b5563',
+    fontWeight: '600',
   },
   sortChipTextActive: {
-    color: '#ee4d2d',
+    color: '#ffffff',
     fontWeight: '700',
   },
   loadingBox: {
@@ -518,13 +514,15 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     fontSize: 13,
-    color: '#777',
+    color: '#6b7280',
   },
   emptyBox: {
     backgroundColor: '#ffffff',
     padding: 40,
     alignItems: 'center',
-    borderRadius: 6,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#e8ece6',
   },
   emptyIcon: {
     fontSize: 48,
@@ -532,45 +530,47 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#222',
+    fontWeight: '800',
+    color: '#111827',
   },
   emptySub: {
     fontSize: 13,
-    color: '#888',
+    color: '#6b7280',
     marginTop: 4,
   },
   /* MOBILE CARD STYLES */
   mobileListContainer: {
-    gap: 10,
+    gap: 12,
   },
   mobileCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 6,
-    padding: 10,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#e8ece6',
+    padding: 12,
     flexDirection: 'row',
-    gap: 12,
+    gap: 14,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
   },
   mobileCardImage: {
-    width: 84,
-    height: 84,
-    borderRadius: 4,
-    backgroundColor: '#f8f8f8',
+    width: 80,
+    height: 80,
+    borderRadius: 14,
+    backgroundColor: '#f8faf7',
   },
   mobileCardContent: {
     flex: 1,
     justifyContent: 'space-between',
   },
   mobileCardName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#222222',
-    lineHeight: 18,
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#111827',
+    lineHeight: 19,
   },
   mobileCardPriceRow: {
     flexDirection: 'row',
@@ -580,19 +580,19 @@ const styles = StyleSheet.create({
   },
   mobileCardPrice: {
     fontSize: 15,
-    fontWeight: '800',
-    color: '#ee4d2d', // Shopee Price
+    fontWeight: '900',
+    color: '#1b4332', // Deep Forest Green
   },
   mobileStockBadge: {
-    backgroundColor: '#f5f5f5',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 3,
+    backgroundColor: '#f1f5ee',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
   },
   mobileStockText: {
     fontSize: 11,
-    color: '#757575',
-    fontWeight: '500',
+    color: '#1b4332',
+    fontWeight: '700',
   },
   mobileCardActions: {
     flexDirection: 'row',
@@ -601,51 +601,48 @@ const styles = StyleSheet.create({
   },
   mobileEditBtn: {
     borderWidth: 1,
-    borderColor: '#ee4d2d',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 3,
+    borderColor: '#1b4332',
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    borderRadius: 14,
   },
   mobileEditBtnText: {
-    color: '#ee4d2d',
+    color: '#1b4332',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   mobileDeleteBtn: {
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 3,
+    borderColor: '#e5e7eb',
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    borderRadius: 14,
   },
   mobileDeleteBtnText: {
-    color: '#757575',
+    color: '#6b7280',
     fontSize: 12,
     fontWeight: '600',
   },
   /* DESKTOP TABLE STYLES */
   tableCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 6,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#e8ece6',
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#fafafa',
+    backgroundColor: '#f8faf7',
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    paddingVertical: 12,
+    borderBottomColor: '#e8ece6',
+    paddingVertical: 14,
     paddingHorizontal: 16,
   },
   th: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#666',
+    fontWeight: '800',
+    color: '#1b4332',
   },
   tableRow: {
     flexDirection: 'row',
@@ -653,37 +650,37 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f5f5f5',
+    borderBottomColor: '#f3f4f6',
   },
   tableRowAlt: {
-    backgroundColor: '#fafafa',
+    backgroundColor: '#fafcfa',
   },
   cell: {
     justifyContent: 'center',
   },
   td: {
     fontSize: 13,
-    color: '#333',
+    color: '#374151',
   },
   productImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 4,
-    backgroundColor: '#f5f5f5',
+    width: 48,
+    height: 48,
+    borderRadius: 10,
+    backgroundColor: '#f8faf7',
   },
   productName: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#222',
+    fontWeight: '700',
+    color: '#111827',
   },
   priceText: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#ee4d2d',
+    fontWeight: '800',
+    color: '#1b4332',
   },
   stockText: {
     fontSize: 13,
-    color: '#444',
+    color: '#4b5563',
   },
   actionCell: {
     flexDirection: 'row',
@@ -691,26 +688,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   editBtn: {
-    backgroundColor: '#ee4d2d',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 3,
+    backgroundColor: '#1b4332',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
   },
   editBtnText: {
     color: '#ffffff',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   deleteBtn: {
-    backgroundColor: '#f5f5f5',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 3,
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: '#e5e7eb',
   },
   deleteBtnText: {
-    color: '#666',
+    color: '#6b7280',
     fontSize: 12,
     fontWeight: '600',
   },

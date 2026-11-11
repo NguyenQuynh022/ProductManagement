@@ -83,7 +83,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        Alert.alert('Quyền truy cập', 'Ứng dụng cần quyền truy cập thư viện ảnh.');
+        Alert.alert('Quyền truy cập', 'Vui lòng cấp quyền truy cập thư viện ảnh để tải ảnh lên.');
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -151,7 +151,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     }
 
     if (!image.trim()) {
-      setError('Vui lòng tải ảnh sản phẩm.');
+      setError('Vui lòng tải hoặc chọn ảnh sản phẩm.');
       return;
     }
 
@@ -159,7 +159,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setSubmitting(true);
       setError(null);
 
-      // Chỉ gửi 4 trường: name, price, soluong, image
+      // Chỉ gửi đúng 4 trường: name, price, soluong, image
       const payload = {
         name: name.trim(),
         price: numPrice,
@@ -189,12 +189,12 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.modalBox}>
-          {/* Header Shopee Seller */}
+          {/* Header ResQ style */}
           <View style={styles.header}>
             <Text style={styles.headerTitle}>
               {isEdit ? 'Chỉnh Sửa Sản Phẩm' : 'Thêm Sản Phẩm Mới'}
             </Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+            <TouchableOpacity onPress={onClose} style={styles.circularCloseBtn}>
               <Text style={styles.closeText}>✕</Text>
             </TouchableOpacity>
           </View>
@@ -206,7 +206,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
               </View>
             )}
 
-            {/* Chọn hình ảnh Shopee Style */}
+            {/* Khung tải ảnh */}
             <View style={styles.imageSection}>
               <Text style={styles.label}>Hình ảnh sản phẩm *</Text>
               
@@ -217,12 +217,12 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   disabled={uploading}
                 >
                   {uploading ? (
-                    <ActivityIndicator size="small" color="#ee4d2d" />
+                    <ActivityIndicator size="small" color="#1b4332" />
                   ) : (
                     <>
                       <Text style={styles.cameraIcon}>📷</Text>
                       <Text style={styles.imagePickerText}>
-                        {image ? 'Đổi ảnh' : '+ Thêm ảnh'}
+                        {image ? 'Đổi ảnh' : 'Tải ảnh lên'}
                       </Text>
                     </>
                   )}
@@ -230,18 +230,18 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
                 {image ? (
                   <View style={styles.previewBox}>
-                    <Image source={{ uri: image }} style={styles.previewImage} resizeMode="contain" />
+                    <Image source={{ uri: image }} style={styles.previewImage} resizeMode="cover" />
                   </View>
                 ) : null}
               </View>
 
               {/* Input URL ảnh thủ công */}
               <TextInput
-                style={[styles.input, { marginTop: 8 }]}
+                style={[styles.input, { marginTop: 10 }]}
                 value={image}
                 onChangeText={setImage}
                 placeholder="Hoặc dán URL hình ảnh..."
-                placeholderTextColor="#999"
+                placeholderTextColor="#9ca3af"
               />
 
               {/* Ẩn file input phục vụ Web */}
@@ -264,39 +264,39 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 value={name}
                 onChangeText={setName}
                 placeholder="Nhập tên sản phẩm..."
-                placeholderTextColor="#999"
+                placeholderTextColor="#9ca3af"
               />
             </View>
 
             {/* Đơn giá và Số lượng kho */}
             <View style={styles.row}>
               <View style={[styles.formGroup, { flex: 1 }]}>
-                <Text style={styles.label}>Giá bán (₫) *</Text>
+                <Text style={styles.label}>Đơn giá (VND) *</Text>
                 <TextInput
                   style={styles.input}
                   value={price}
                   onChangeText={setPrice}
                   placeholder="0"
                   keyboardType="numeric"
-                  placeholderTextColor="#999"
+                  placeholderTextColor="#9ca3af"
                 />
               </View>
 
               <View style={[styles.formGroup, { flex: 1 }]}>
-                <Text style={styles.label}>Kho hàng *</Text>
+                <Text style={styles.label}>Số lượng tồn *</Text>
                 <TextInput
                   style={styles.input}
                   value={soluong}
                   onChangeText={setSoluong}
                   placeholder="0"
                   keyboardType="numeric"
-                  placeholderTextColor="#999"
+                  placeholderTextColor="#9ca3af"
                 />
               </View>
             </View>
           </ScrollView>
 
-          {/* Footer buttons Shopee style */}
+          {/* Footer buttons ResQ style */}
           <View style={styles.footer}>
             <TouchableOpacity style={styles.cancelBtn} onPress={onClose} disabled={submitting}>
               <Text style={styles.cancelBtnText}>Hủy bỏ</Text>
@@ -325,59 +325,66 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
   },
   modalBox: {
     backgroundColor: '#ffffff',
-    borderRadius: 8,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#e8ece6',
     width: '100%',
-    maxWidth: 500,
+    maxWidth: 480,
     maxHeight: '90%',
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
     elevation: 8,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: '#f3f4f6',
   },
   headerTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#222',
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#1b4332',
   },
-  closeBtn: {
-    padding: 4,
+  circularCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f3f4f6',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   closeText: {
-    fontSize: 18,
-    color: '#999',
+    fontSize: 14,
+    color: '#6b7280',
     fontWeight: 'bold',
   },
   scrollContent: {
-    padding: 18,
+    padding: 20,
   },
   errorBox: {
-    backgroundColor: '#fff0f0',
+    backgroundColor: '#fef2f2',
     borderWidth: 1,
-    borderColor: '#ffc2c2',
-    borderRadius: 4,
+    borderColor: '#fecaca',
+    borderRadius: 12,
     padding: 10,
     marginBottom: 14,
   },
   errorText: {
-    color: '#ee4d2d',
+    color: '#dc2626',
     fontSize: 13,
   },
   imageSection: {
@@ -390,34 +397,32 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   imagePickerBox: {
-    width: 80,
-    height: 80,
-    borderWidth: 1,
+    width: 86,
+    height: 86,
+    borderWidth: 1.5,
     borderStyle: 'dashed',
-    borderColor: '#ee4d2d',
-    borderRadius: 4,
-    backgroundColor: '#fffcfb',
+    borderColor: '#1b4332',
+    borderRadius: 16,
+    backgroundColor: '#f7faf6',
     alignItems: 'center',
     justifyContent: 'center',
   },
   cameraIcon: {
-    fontSize: 22,
+    fontSize: 24,
   },
   imagePickerText: {
     fontSize: 11,
-    color: '#ee4d2d',
-    fontWeight: '600',
+    color: '#1b4332',
+    fontWeight: '700',
     marginTop: 4,
   },
   previewBox: {
-    width: 80,
-    height: 80,
-    borderRadius: 4,
+    width: 86,
+    height: 86,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#e8e8e8',
-    backgroundColor: '#fafafa',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: '#e8ece6',
+    backgroundColor: '#f8faf7',
     overflow: 'hidden',
   },
   previewImage: {
@@ -433,51 +438,51 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#374151',
     marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
+    borderColor: '#e5e7eb',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     fontSize: 13,
-    color: '#222',
+    color: '#111827',
     backgroundColor: '#ffffff',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: 10,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-    backgroundColor: '#fafafa',
+    borderTopColor: '#f3f4f6',
+    backgroundColor: '#fafcfa',
   },
   cancelBtn: {
-    paddingVertical: 9,
-    paddingHorizontal: 16,
-    borderRadius: 4,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#e5e7eb',
     backgroundColor: '#ffffff',
   },
   cancelBtnText: {
-    color: '#666',
+    color: '#6b7280',
     fontSize: 13,
     fontWeight: '600',
   },
   submitBtn: {
-    backgroundColor: '#ee4d2d', // Shopee Orange
-    paddingVertical: 9,
-    paddingHorizontal: 20,
-    borderRadius: 4,
+    backgroundColor: '#1b4332', // Deep Green
+    paddingVertical: 10,
+    paddingHorizontal: 22,
+    borderRadius: 20,
   },
   submitBtnDisabled: {
-    backgroundColor: '#f5a897',
+    backgroundColor: '#9ca3af',
   },
   submitBtnText: {
     color: '#ffffff',
