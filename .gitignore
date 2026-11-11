@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Expo & React Native
+.expo/
+dist/
+web-build/
+*.tsbuildinfo
+
+# Uploads temporary files (keep directory)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+.idea/
+*.log
+
