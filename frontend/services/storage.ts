@@ -2,11 +2,33 @@ import { Platform } from 'react-native';
 
 const TOKEN_KEY = 'admin_jwt_token';
 const USER_KEY = 'admin_user_data';
+const STORE_LOGO_KEY = 'admin_store_logo';
 
 let memoryToken: string | null = null;
 let memoryUser: string | null = null;
+let memoryStoreLogo: string | null = 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&q=80';
 
 export const storage = {
+  async getStoreLogo(): Promise<string> {
+    const defaultLogo = 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&q=80';
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+      try {
+        return window.localStorage.getItem(STORE_LOGO_KEY) || defaultLogo;
+      } catch {
+        return memoryStoreLogo || defaultLogo;
+      }
+    }
+    return memoryStoreLogo || defaultLogo;
+  },
+
+  async setStoreLogo(logoUri: string): Promise<void> {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+      try {
+        window.localStorage.setItem(STORE_LOGO_KEY, logoUri);
+      } catch {}
+    }
+    memoryStoreLogo = logoUri;
+  },
   async getToken(): Promise<string | null> {
     if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
       try {

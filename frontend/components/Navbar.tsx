@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,15 +7,40 @@ import {
   Modal,
   Pressable,
   ScrollView,
+  Image,
+  Platform,
+  Alert,
 } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { authService } from '../services/authService';
+import { storage } from '../services/storage';
 
 interface NavbarProps {
   username?: string;
   productCount?: number;
   onAddPress?: () => void;
 }
+
+// Danh sách các logo cửa hàng gợi ý đẹp, hiện đại
+const PRESET_LOGOS = [
+  {
+    name: 'Cửa hàng Boutique',
+    uri: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&q=80',
+  },
+  {
+    name: 'Shop Công Nghệ',
+    uri: 'https://images.unsplash.com/photo-1511707171634-5f897ff02560?w=200&q=80',
+  },
+  {
+    name: 'Store Thời Trang',
+    uri: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=80',
+  },
+  {
+    name: 'Flagship Store',
+    uri: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=200&q=80',
+  },
+];
 
 export const Navbar: React.FC<NavbarProps> = ({
   username = 'Admin',
@@ -24,8 +49,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const router = useRouter();
   const pathname = usePathname();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [storeLogo, setStoreLogo] = useState(PRESET_LOGOS[0].uri);
+
+  useEffect(() => {
+    const loadLogo = async () => {
+      const savedLogo = await storage.getStoreLogo();
+      if (savedLogo) setStoreLogo(savedLogo);
+    };
+    loadLogo();
+  }, []);
 
   const handleLogout = async () => {
     setMenuOpen(false);
@@ -39,6 +74,37 @@ export const Navbar: React.FC<NavbarProps> = ({
     router.push(path as any);
   };
 
+  // Chọn ảnh logo từ điện thoại
+  const handlePickLogoFromGallery = async () => {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Quyền truy cập', 'Vui lòng cấp quyền truy cập thư viện ảnh để đổi logo.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.85,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const newLogoUri = result.assets[0].uri;
+        setStoreLogo(newLogoUri);
+        await storage.setStoreLogo(newLogoUri);
+      }
+    } catch (err: any) {
+      Alert.alert('Lỗi', 'Không thể chọn ảnh: ' + err.message);
+    }
+  };
+
+  const handleSelectPresetLogo = async (uri: string) => {
+    setStoreLogo(uri);
+    await storage.setStoreLogo(uri);
+  };
+
   const navItems = [
     { label: '📦 Quản lý sản phẩm', path: '/admin/products' },
     { label: '📊 Thống kê doanh thu & kho', path: '/admin/dashboard' },
@@ -46,28 +112,31 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <View>
-      {/* ───────── Thanh header 3 cột cân đối ───────── */}
+      {/* ───────── Thanh header rộng rãi, không bị cấn thanh trạng thái ───────── */}
       <View style={styles.container}>
 
-        {/* Cột trái: Logo */}
+        {/* Cột trái: Logo cửa hàng có thể bấm đổi ảnh */}
         <TouchableOpacity
           style={styles.logoBtn}
           onPress={() => setProfileOpen(true)}
-          activeOpacity={0.8}
+          activeOpacity={0.85}
         >
           <View style={styles.logoBadge}>
-            <Text style={styles.logoText}>🛍️</Text>
+            <Image source={{ uri: storeLogo }} style={styles.logoImage} resizeMode="cover" />
+            <View style={styles.logoEditBadge}>
+              <Text style={styles.logoEditText}>✏️</Text>
+            </View>
           </View>
         </TouchableOpacity>
 
-        {/* Cột giữa: Tiêu đề */}
+        {/* Cột giữa: Tiêu đề Quản Lý Bán Hàng */}
         <TouchableOpacity
           style={styles.titleContainer}
           onPress={() => setProfileOpen(true)}
           activeOpacity={0.85}
         >
           <Text style={styles.brandTitle} numberOfLines={1}>Quản Lý Bán Hàng</Text>
-          <Text style={styles.brandSub}>Nhấn để xem hồ sơ cửa hàng</Text>
+          <Text style={styles.brandSub}>Chạm để xem &amp; sửa logo cửa hàng</Text>
         </TouchableOpacity>
 
         {/* Cột phải: Nút hamburger ☰ */}
@@ -82,7 +151,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </TouchableOpacity>
       </View>
 
-      {/* ───────── Modal: Profile cửa hàng ───────── */}
+      {/* ───────── Modal: Profile cửa hàng & Chỉnh sửa Logo ───────── */}
       <Modal
         visible={profileOpen}
         transparent
@@ -94,21 +163,58 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Thanh kéo */}
             <View style={styles.sheetHandle} />
 
-            {/* Avatar cửa hàng */}
+            {/* Avatar cửa hàng kèm nút đổi ảnh */}
             <View style={styles.profileAvatarWrap}>
               <View style={styles.profileAvatar}>
-                <Text style={styles.profileAvatarIcon}>🛍️</Text>
+                <Image source={{ uri: storeLogo }} style={styles.profileAvatarImg} resizeMode="cover" />
               </View>
-              <View style={styles.profileOnlineDot} />
+              <TouchableOpacity
+                style={styles.avatarEditBtn}
+                onPress={handlePickLogoFromGallery}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.avatarEditIcon}>📷</Text>
+              </TouchableOpacity>
             </View>
 
             <Text style={styles.profileStoreName}>Quản Lý Bán Hàng</Text>
-            <Text style={styles.profileStoreDesc}>Hệ thống quản trị kho hàng & bán lẻ</Text>
+            <Text style={styles.profileStoreDesc}>Cửa hàng &amp; Kho hàng trực tuyến</Text>
 
             <View style={styles.profileDivider} />
 
-            {/* Thông tin */}
             <ScrollView showsVerticalScrollIndicator={false}>
+              {/* Nút đổi ảnh logo từ điện thoại */}
+              <TouchableOpacity
+                style={styles.pickPhotoBtn}
+                onPress={handlePickLogoFromGallery}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.pickPhotoIcon}>🖼️</Text>
+                <Text style={styles.pickPhotoText}>Tải logo mới từ thư viện ảnh</Text>
+              </TouchableOpacity>
+
+              {/* Bộ sưu tập logo mẫu */}
+              <Text style={styles.presetHeading}>Hoặc chọn nhanh logo mẫu đẹp:</Text>
+              <View style={styles.presetGrid}>
+                {PRESET_LOGOS.map((item, index) => {
+                  const isSelected = storeLogo === item.uri;
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      style={[styles.presetItem, isSelected && styles.presetItemActive]}
+                      onPress={() => handleSelectPresetLogo(item.uri)}
+                      activeOpacity={0.8}
+                    >
+                      <Image source={{ uri: item.uri }} style={styles.presetImg} resizeMode="cover" />
+                      <Text style={[styles.presetLabel, isSelected && styles.presetLabelActive]} numberOfLines={1}>
+                        {item.name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              {/* Thông tin nhanh */}
               <View style={styles.profileInfoGrid}>
                 <View style={styles.profileInfoCard}>
                   <Text style={styles.profileInfoIcon}>👤</Text>
@@ -117,7 +223,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </View>
                 <View style={styles.profileInfoCard}>
                   <Text style={styles.profileInfoIcon}>📦</Text>
-                  <Text style={styles.profileInfoLabel}>Sản phẩm</Text>
+                  <Text style={styles.profileInfoLabel}>Sản phẩm trong kho</Text>
                   <Text style={styles.profileInfoValue}>
                     {productCount !== undefined ? productCount : '—'} mặt hàng
                   </Text>
@@ -129,7 +235,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   style={styles.profileCloseBtn}
                   onPress={() => setProfileOpen(false)}
                 >
-                  <Text style={styles.profileCloseBtnText}>Đóng hồ sơ</Text>
+                  <Text style={styles.profileCloseBtnText}>Đóng</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.profileLogoutBtn} onPress={handleLogout}>
                   <Text style={styles.profileLogoutBtnText}>🚪 Đăng xuất</Text>
@@ -203,33 +309,53 @@ export const Navbar: React.FC<NavbarProps> = ({
 };
 
 const styles = StyleSheet.create({
-  /* ── Header 3 cột ── */
+  /* ── Header 3 cột rộng rãi, đẩy xuống dưới thanh trạng thái ── */
   container: {
     backgroundColor: '#1b4332',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingTop: Platform.OS === 'android' ? 38 : (Platform.OS === 'ios' ? 46 : 18),
+    paddingBottom: 16,
+    paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 6,
   },
   logoBtn: {
     marginRight: 10,
   },
   logoBadge: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.18)',
+    width: 50,
+    height: 50,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderWidth: 2,
+    borderColor: '#a7f3d0',
+    overflow: 'hidden',
+    position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.25)',
   },
-  logoText: { fontSize: 22 },
+  logoImage: {
+    width: '100%',
+    height: '100%',
+  },
+  logoEditBadge: {
+    position: 'absolute',
+    bottom: -1,
+    right: -1,
+    backgroundColor: '#1b4332',
+    borderRadius: 8,
+    paddingHorizontal: 3,
+    paddingVertical: 1,
+    borderWidth: 1,
+    borderColor: '#ffffff',
+  },
+  logoEditText: {
+    fontSize: 9,
+  },
   titleContainer: {
     flex: 1,
     alignItems: 'center',
@@ -237,22 +363,22 @@ const styles = StyleSheet.create({
   },
   brandTitle: {
     color: '#ffffff',
-    fontSize: 17,
+    fontSize: 19,
     fontWeight: '900',
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
     textAlign: 'center',
   },
   brandSub: {
-    color: 'rgba(255,255,255,0.55)',
-    fontSize: 9,
-    fontWeight: '500',
+    color: 'rgba(255,255,255,0.65)',
+    fontSize: 10,
+    fontWeight: '600',
     textAlign: 'center',
-    marginTop: 1,
+    marginTop: 2,
   },
   hamburgerBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: 50,
+    height: 50,
+    borderRadius: 16,
     backgroundColor: 'rgba(255,255,255,0.18)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -262,13 +388,13 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.25)',
   },
   hamburgerLine: {
-    width: 20,
-    height: 2,
+    width: 22,
+    height: 2.5,
     backgroundColor: '#ffffff',
     borderRadius: 2,
   },
 
-  /* ── Modal overlay chung ── */
+  /* ── Modal overlay ── */
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.75)',
@@ -288,7 +414,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     paddingBottom: 32,
-    maxHeight: '82%',
+    maxHeight: '85%',
     paddingHorizontal: 22,
     paddingTop: 12,
   },
@@ -298,37 +424,46 @@ const styles = StyleSheet.create({
     backgroundColor: '#d1d5db',
     borderRadius: 2,
     alignSelf: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   profileAvatarWrap: {
     alignSelf: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
     position: 'relative',
   },
   profileAvatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 24,
-    backgroundColor: '#1b4332',
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 86,
+    height: 86,
+    borderRadius: 26,
+    borderWidth: 3,
+    borderColor: '#1b4332',
+    overflow: 'hidden',
+    backgroundColor: '#f1f5ee',
     shadowColor: '#1b4332',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 6,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  profileAvatarIcon: { fontSize: 36 },
-  profileOnlineDot: {
+  profileAvatarImg: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarEditBtn: {
     position: 'absolute',
-    bottom: 2,
-    right: 2,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#22c55e',
-    borderWidth: 2.5,
+    bottom: -2,
+    right: -2,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#1b4332',
+    borderWidth: 2,
     borderColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarEditIcon: {
+    fontSize: 14,
   },
   profileStoreName: {
     fontSize: 22,
@@ -342,27 +477,95 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     textAlign: 'center',
     marginTop: 4,
-    marginBottom: 18,
+    marginBottom: 16,
   },
-  profileDivider: { height: 1, backgroundColor: '#f0f4ee', marginBottom: 16 },
+  profileDivider: {
+    height: 1,
+    backgroundColor: '#f0f4ee',
+    marginBottom: 14,
+  },
+  pickPhotoBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1.5,
+    borderColor: '#1b4332',
+    borderRadius: 18,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    gap: 8,
+  },
+  pickPhotoIcon: {
+    fontSize: 18,
+  },
+  pickPhotoText: {
+    color: '#1b4332',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  presetHeading: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#6b7280',
+    marginBottom: 8,
+  },
+  presetGrid: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 16,
+  },
+  presetItem: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 6,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#e8ece6',
+    backgroundColor: '#f8faf7',
+  },
+  presetItemActive: {
+    borderColor: '#1b4332',
+    backgroundColor: '#ecfdf5',
+  },
+  presetImg: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    marginBottom: 4,
+  },
+  presetLabel: {
+    fontSize: 10,
+    color: '#4b5563',
+    fontWeight: '600',
+  },
+  presetLabelActive: {
+    color: '#1b4332',
+    fontWeight: '800',
+  },
   profileInfoGrid: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   profileInfoCard: {
     flex: 1,
     backgroundColor: '#f8faf7',
-    borderRadius: 18,
-    padding: 16,
+    borderRadius: 16,
+    padding: 14,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#e8ece6',
   },
-  profileInfoIcon: { fontSize: 22, marginBottom: 6 },
-  profileInfoLabel: { fontSize: 11, color: '#6b7280', fontWeight: '600', marginBottom: 4 },
+  profileInfoIcon: { fontSize: 22, marginBottom: 4 },
+  profileInfoLabel: { fontSize: 11, color: '#6b7280', fontWeight: '600', marginBottom: 2 },
   profileInfoValue: { fontSize: 13, fontWeight: '800', color: '#1b4332', textAlign: 'center' },
-  profileBtnGroup: { flexDirection: 'row', gap: 12, marginTop: 8 },
+  profileBtnGroup: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 4,
+  },
   profileCloseBtn: {
     flex: 1,
     backgroundColor: '#f0f4ee',
@@ -386,7 +589,7 @@ const styles = StyleSheet.create({
 
   /* ── Dropdown menu ☰ ── */
   dropdownMenu: {
-    marginTop: 68,
+    marginTop: 78,
     marginRight: 14,
     backgroundColor: '#ffffff',
     borderRadius: 20,
