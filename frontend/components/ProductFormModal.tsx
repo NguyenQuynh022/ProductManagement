@@ -10,7 +10,9 @@ import {
   Image,
   ScrollView,
   Platform,
+  Alert,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Product } from '../types/product';
 import { productService } from '../services/productService';
 
@@ -76,10 +78,57 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     }
   };
 
+  // Android/iOS: dùng expo-image-picker để chọn ảnh từ thư viện
+  const handlePickImageNative = async () => {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Quyền truy cập', 'Ứng dụng cần quyền truy cập thư viện ảnh.');
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        const uri = asset.uri;
+        const filename = uri.split('/').pop() || `photo-${Date.now()}.jpg`;
+        const ext = filename.split('.').pop()?.toLowerCase() || 'jpg';
+        const mimeType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+        try {
+          setUploading(true);
+          setError(null);
+          const formData = new FormData();
+          formData.append('image', { uri, name: filename, type: mimeType } as any);
+          const res = await productService.uploadImage(formData);
+          if (res.success && res.image) {
+            setImage(res.image);
+          } else {
+            setError('Không nhận được đường dẫn ảnh từ máy chủ.');
+          }
+        } catch (err: any) {
+          setError(err.response?.data?.message || 'Lỗi tải ảnh lên server');
+        } finally {
+          setUploading(false);
+        }
+      }
+    } catch (err: any) {
+      setError('Lỗi khi mở thư viện ảnh: ' + err.message);
+    }
+  };
+
   const handleNativeImagePick = () => {
     if (Platform.OS === 'web' && typeof document !== 'undefined') {
       const input = document.getElementById('web-file-input') as HTMLInputElement;
-      if (input) input.click();
+      if (input) {
+        input.value = '';
+        input.click();
+      }
+    } else {
+      handlePickImageNative();
     }
   };
 

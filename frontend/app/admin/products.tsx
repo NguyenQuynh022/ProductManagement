@@ -175,9 +175,6 @@ export default function ProductsScreen() {
           </View>
 
           <View style={styles.topActionBtns}>
-            <TouchableOpacity style={styles.exportBtn} onPress={handleExportJson}>
-              <Text style={styles.exportBtnText}>💾 Xuất file JSON nộp bài</Text>
-            </TouchableOpacity>
             <TouchableOpacity style={styles.addBtn} onPress={handleOpenAddModal}>
               <Text style={styles.addBtnText}>➕ Thêm sản phẩm mới</Text>
             </TouchableOpacity>
