@@ -10,9 +10,9 @@ import {
   Image,
   Alert,
   SafeAreaView,
-  StatusBar,
   Platform,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { productService } from '../../services/productService';
@@ -182,7 +182,7 @@ export default function MobileAddProductScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      <StatusBar style="light" />
 
       {/* Header */}
       <View style={styles.header}>

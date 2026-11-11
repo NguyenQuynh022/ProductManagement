@@ -33,7 +33,7 @@ cd backend
 npm install
 npm run dev
 ```
-- Máy chủ API chạy tại: `http://localhost:5000` (hoặc `http://192.168.137.232:5000`).
+- Máy chủ API chạy tại: `http://localhost:5000` (hoặc qua IP LAN `http://192.168.1.5:5000`).
 - API Base URL: `http://localhost:5000/api`.
 
 ### Bước 2: Khởi chạy Web Admin
@@ -46,8 +46,10 @@ npx expo start --web
 - Truy cập trình duyệt tại: `http://localhost:8081`.
 - Tài khoản quản trị Admin: Được cấu hình qua biến môi trường trong `backend/.env` (tham khảo mẫu tại `backend/.env.example`). *Khuyến nghị đổi mật khẩu quản trị trước khi công khai dự án.*
 
-### Bước 3: Khởi chạy Mobile Android
-- **Cách 1: Điện thoại thật:** Kết nối điện thoại cùng mạng Wi-Fi với máy tính, mở app **Expo Go** và quét mã QR từ terminal `npx expo start`.
+### Bước 3: Khởi chạy Mobile Android (Expo SDK 58)
+- **Cách 1: Điện thoại thật (Expo Go):** 
+  - Kết nối điện thoại cùng mạng Wi-Fi với máy tính (`192.168.1.5`).
+  - Mở app **Expo Go** trên Android, quét mã QR hoặc chọn **"Enter URL manually"** và nhập: `exp://192.168.1.5:8081`.
 - **Cách 2: Máy ảo Android (Emulator):** Khởi chạy máy ảo `Medium_Phone_API_35` và nhấn phím `a` trên terminal Expo.
 
 ---

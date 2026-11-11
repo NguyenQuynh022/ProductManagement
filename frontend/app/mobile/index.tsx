@@ -11,8 +11,8 @@ import {
   RefreshControl,
   SafeAreaView,
   Platform,
-  StatusBar,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { productService } from '../../services/productService';
 import { Product } from '../../types/product';
@@ -89,7 +89,7 @@ export default function MobileHomeScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      <StatusBar style="light" />
 
       {/* Header Mobile */}
       <View style={styles.header}>

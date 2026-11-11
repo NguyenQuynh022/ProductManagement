@@ -8,8 +8,8 @@ import {
   StyleSheet,
   ActivityIndicator,
   SafeAreaView,
-  StatusBar,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { productService } from '../../../services/productService';
 import { Product } from '../../../types/product';
@@ -50,7 +50,7 @@ export default function MobileProductDetailScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      <StatusBar style="light" />
 
       {/* Header */}
       <View style={styles.header}>

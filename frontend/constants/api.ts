@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 
 // IPv4 của máy tính trên mạng Wi-Fi (dùng cho Mobile Android kết nối cùng mạng)
-export const LAN_HOST = '192.168.137.232';
+export const LAN_HOST = '192.168.1.5';
 export const PORT = 5000;
 
 // Tự động chọn URL phù hợp: Web dùng localhost, Mobile dùng LAN IPv4

@@ -28,7 +28,7 @@ Dự án "Xây dựng ứng dụng quản lý sản phẩm" phục vụ phân h�
   - jsonwebtoken (xác thực quyền truy cập JWT)
 - **Frontend:** 
   - React Native
-  - Expo SDK 52
+  - Expo SDK 58 (tương thích phiên bản Expo Go mới nhất trên Android)
   - Expo Router v4
   - React Native Web
   - TypeScript
@@ -46,7 +46,7 @@ Hệ thống tuân thủ kiến trúc phân tầng độc lập:
 ```
 ┌─────────────────────────────────┐       ┌─────────────────────────────────┐
 │     React Native Web (Admin)    │       │   Mobile Android (Expo App)     │
-│   http://localhost:8081 (Web)   │       │   Mạng LAN: 192.168.137.232     │
+│   http://localhost:8081 (Web)   │       │   Mạng LAN: 192.168.1.5         │
 └────────────────┬────────────────┘       └────────────────┬────────────────┘
                  │                                         │
                  │ RESTful API (JSON & Multipart)          │
@@ -220,7 +220,7 @@ Tại thư mục `backend/`:
 ```bash
 npm run dev
 ```
-- Server chạy tại: `http://localhost:5000` (hoặc qua IP mạng LAN `http://192.168.137.232:5000`).
+- Server chạy tại: `http://localhost:5000` (hoặc qua IP mạng LAN `http://192.168.1.5:5000`).
 
 ---
 
@@ -238,13 +238,13 @@ npx expo start --web
 
 ### Cách 1: Chạy trên điện thoại Android thật (Khuyên dùng)
 1. Đảm bảo máy tính và điện thoại Android kết nối **chung một mạng Wi-Fi**.
-2. Địa chỉ IPv4 của máy tính trên mạng Wi-Fi: **`192.168.137.232`** (đã cấu hình sẵn trong `frontend/constants/api.ts`).
+2. Địa chỉ IPv4 của máy tính trên mạng Wi-Fi: **`192.168.1.5`** (đã cấu hình sẵn trong `frontend/constants/api.ts`).
 3. Khởi chạy Expo:
    ```bash
    cd frontend
    npx expo start
    ```
-4. Mở ứng dụng **Expo Go** trên điện thoại Android, quét mã QR hiển thị trên màn hình terminal máy tính để khởi chạy ứng dụng.
+4. Mở ứng dụng **Expo Go** trên điện thoại Android, quét mã QR hoặc chọn **"Enter URL manually"** và nhập `exp://192.168.1.5:8081` để khởi chạy ứng dụng.
 
 ### Cách 2: Chạy trên Android Emulator (Máy ảo Android)
 Máy tính đã có sẵn AVD: `Medium_Phone_API_35`.
