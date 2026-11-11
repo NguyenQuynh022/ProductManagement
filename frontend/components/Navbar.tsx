@@ -23,23 +23,31 @@ interface NavbarProps {
   onAddPress?: () => void;
 }
 
-// Danh sách logo gợi ý
+// Danh sách logo gợi ý – dùng màu nền + emoji (không phụ thuộc URL bên ngoài)
 const PRESET_LOGOS = [
   {
     name: 'Cửa hàng Boutique',
-    uri: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&q=80',
+    uri: '__preset_boutique__',
+    emoji: '🛍️',
+    bg: '#1a3a2a',
   },
   {
     name: 'Shop Công Nghệ',
-    uri: 'https://images.unsplash.com/photo-1511707171634-5f897ff02560?w=200&q=80',
+    uri: '__preset_tech__',
+    emoji: '💻',
+    bg: '#1e3a5f',
   },
   {
     name: 'Store Thời Trang',
-    uri: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=80',
+    uri: '__preset_fashion__',
+    emoji: '👗',
+    bg: '#4a1a3a',
   },
   {
     name: 'Flagship Store',
-    uri: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=200&q=80',
+    uri: '__preset_flagship__',
+    emoji: '⭐',
+    bg: '#3a2a1a',
   },
 ];
 
@@ -56,6 +64,23 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [storeLogo, setStoreLogo] = useState(PRESET_LOGOS[0].uri);
+
+  // Helper: kiểm tra logo có phải preset (không phải URL thật)
+  const isPresetLogo = (uri: string) => uri.startsWith('__preset_');
+  const getPresetInfo = (uri: string) => PRESET_LOGOS.find(p => p.uri === uri);
+
+  // Component render logo (xử lý cả preset và URL thật)
+  const LogoView = ({ size, style }: { size: number; style?: any }) => {
+    const preset = isPresetLogo(storeLogo) ? getPresetInfo(storeLogo) : null;
+    if (preset) {
+      return (
+        <View style={[{ width: size, height: size, borderRadius: size / 4, alignItems: 'center', justifyContent: 'center', backgroundColor: preset.bg }, style]}>
+          <Text style={{ fontSize: size * 0.5 }}>{preset.emoji}</Text>
+        </View>
+      );
+    }
+    return <Image source={{ uri: storeLogo }} style={[{ width: size, height: size, borderRadius: size / 4 }, style]} resizeMode="cover" />;
+  };
 
   useEffect(() => {
     const loadLogo = async () => {
@@ -125,7 +150,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               activeOpacity={0.85}
             >
               <View style={styles.logoBadge}>
-                <Image source={{ uri: storeLogo }} style={styles.logoImage} resizeMode="cover" />
+                <LogoView size={38} />
                 <View style={styles.logoEditBadge}>
                   <Text style={styles.logoEditText}>✏️</Text>
                 </View>
@@ -162,7 +187,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               activeOpacity={0.85}
             >
               <View style={styles.desktopLogoBadge}>
-                <Image source={{ uri: storeLogo }} style={styles.logoImage} resizeMode="cover" />
+                <LogoView size={42} />
                 <View style={styles.logoEditBadge}>
                   <Text style={styles.logoEditText}>✏️</Text>
                 </View>
@@ -253,7 +278,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Avatar cửa hàng */}
             <View style={styles.profileAvatarWrap}>
               <View style={styles.profileAvatar}>
-                <Image source={{ uri: storeLogo }} style={styles.profileAvatarImg} resizeMode="cover" />
+                <LogoView size={76} />
               </View>
               <TouchableOpacity
                 style={styles.avatarEditBtn}
@@ -292,7 +317,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                       onPress={() => handleSelectPresetLogo(item.uri)}
                       activeOpacity={0.8}
                     >
-                      <Image source={{ uri: item.uri }} style={styles.presetImg} resizeMode="cover" />
+                      <View style={[styles.presetImg, { backgroundColor: item.bg, alignItems: 'center', justifyContent: 'center' }]}>
+                        <Text style={{ fontSize: 32 }}>{item.emoji}</Text>
+                      </View>
                       <Text style={[styles.presetLabel, isSelected && styles.presetLabelActive]} numberOfLines={1}>
                         {item.name}
                       </Text>
