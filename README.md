@@ -44,7 +44,7 @@ npm install
 npx expo start --web
 ```
 - Truy cập trình duyệt tại: `http://localhost:8081`.
-- Tài khoản đăng nhập Admin: `admin` / `admin123`.
+- Tài khoản quản trị Admin: Được cấu hình qua biến môi trường trong `backend/.env` (tham khảo mẫu tại `backend/.env.example`). *Khuyến nghị đổi mật khẩu quản trị trước khi công khai dự án.*
 
 ### Bước 3: Khởi chạy Mobile Android
 - **Cách 1: Điện thoại thật:** Kết nối điện thoại cùng mạng Wi-Fi với máy tính, mở app **Expo Go** và quét mã QR từ terminal `npx expo start`.
